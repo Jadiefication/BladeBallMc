@@ -8,7 +8,6 @@ Welcome to **BladeBallMC**, an exciting upcoming Minecraft server project that c
 - 🛡️ **Custom Abilities and Gear**: Equip unique weapons, armor, and abilities to gain an edge on the field.
 - 🏟️ **Dynamic Arenas**: Play in beautifully crafted arenas that change and evolve based on in-game events.
 - 🎯 **Progression System**: Earn rewards, level up your character, and unlock new abilities and items.
-- 📖 **Unique Lore and Storyline**: Immerse yourself in the rich backstory of the BladeBallMC universe.
 
 ## 🎮 Gameplay
 
