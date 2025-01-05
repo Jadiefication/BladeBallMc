@@ -29,8 +29,9 @@ public class GamemodeCommand extends Command {
         }));
 
         gamemode.setCallback(((commandSender, e) -> {
-            if (e.getInput().equalsIgnoreCase("creative") || e.getInput().equalsIgnoreCase("survival") || e.getInput().equalsIgnoreCase("spectator") || e.getInput().equalsIgnoreCase("adventure")) {
-            } else {
+            try {
+                GameMode.valueOf(e.getInput());
+            } catch (IllegalArgumentException ex) {
                 commandSender.sendMessage(Component.text("§4§lInvalid gamemode"));
             }
         }));

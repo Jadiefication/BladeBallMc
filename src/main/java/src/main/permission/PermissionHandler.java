@@ -20,13 +20,11 @@ public abstract class PermissionHandler {
 
     public static void startHandler() {
         File file = new File("permissions.db");
-        if (!file.exists()) {
             try {
-                file.createNewFile();
+                boolean ignored = file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
         startDatabase();
     }
 

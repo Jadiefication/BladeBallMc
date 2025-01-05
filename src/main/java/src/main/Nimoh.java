@@ -49,10 +49,12 @@ public class Nimoh {
 
         server.start("0.0.0.0", scanner.nextInt());
 
-        while (true) {
-            if (scanner.next().equalsIgnoreCase("stop")) {
-                MinecraftServer.stopCleanly();
+        new Thread(() -> {
+            while (true) {
+                if (scanner.next().equalsIgnoreCase("stop")) {
+                    MinecraftServer.stopCleanly();
+                }
             }
-        }
+        }).start();
     }
 }

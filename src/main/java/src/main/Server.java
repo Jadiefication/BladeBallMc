@@ -18,7 +18,8 @@ import src.main.commands.FillCommand;
 import src.main.commands.GamemodeCommand;
 import src.main.commands.OpCommand;
 import src.main.commands.StopCommand;
-import src.main.commands.particlecommand.ParticleCommand;
+import src.main.commands.particlecommand.ThreeDimensionalParticleCommand;
+import src.main.commands.particlecommand.TwoDimensionalParticleCommand;
 import src.main.commands.timecommand.TimeCommand;
 import src.main.commands.weathercommand.WeatherCommand;
 import src.main.eventfunctions.EventFunction;
@@ -48,11 +49,12 @@ public class Server {
     public static void worldManager(InstanceManager manager, List<String> worldPaths) {
 
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
+            manager.getInstances().forEach(instance -> {
+                instance.sendMessage(Component.text("§4§lServer shutting down"));
+            });
             for (String worldPath : worldPaths) {
                 File worldFolder = new File(worldPath);
-                if (worldFolder.exists()) {
-                    worldFolder.delete();
-                }
+                boolean ignored = worldFolder.delete();
             }
             System.out.println("Saving chunks...");
             manager.getInstances().forEach(Instance::saveChunksToStorage);
@@ -70,7 +72,8 @@ public class Server {
 
     public static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
-        List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new ParticleCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand());
+        List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TwoDimensionalParticleCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
+                new ThreeDimensionalParticleCommand());
 
         for (Command command : commands) {
             manager.register(command);

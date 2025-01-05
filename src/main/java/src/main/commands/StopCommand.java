@@ -9,12 +9,6 @@ public class StopCommand extends Command {
         super("stop");
 
         setDefaultExecutor((sender, context) -> {
-            sender.sendMessage("§4§lServer shutting down");
-            MinecraftServer.stopCleanly();
-        });
-
-        addSyntax((sender, context) -> {
-            sender.sendMessage("§4§lServer shutting down");
             MinecraftServer.stopCleanly();
         });
     }

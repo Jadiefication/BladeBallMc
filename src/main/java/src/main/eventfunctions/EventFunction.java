@@ -14,6 +14,7 @@ import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.item.ItemStack;
 import src.main.Nimoh;
 import src.main.Server;
+import src.main.commands.debug.gui.DebugGui;
 import src.main.customitem.CustomItem;
 import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
@@ -49,6 +50,7 @@ public abstract class EventFunction {
         }
         event.setSpawningInstance(Nimoh.instanceContainer);
         player.setRespawnPoint(new Pos(0.0, 44.0, 0.0));
+        player.openInventory(new DebugGui());
     }
 
     public static void onPlace(PlayerBlockPlaceEvent event) {
