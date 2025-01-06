@@ -53,6 +53,7 @@ public class Nimoh {
             while (true) {
                 if (scanner.next().equalsIgnoreCase("stop")) {
                     MinecraftServer.stopCleanly();
+                    break;
                 }
             }
         }).start();

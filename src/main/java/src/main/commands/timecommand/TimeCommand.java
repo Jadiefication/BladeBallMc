@@ -30,10 +30,13 @@ public class TimeCommand extends Command {
         addSyntax((sender, context) -> {
             final String doAction = context.get(action);
             final Time time = context.get(type);
-            final PermissionablePlayer player = (PermissionablePlayer) sender;
+            if (sender instanceof PermissionablePlayer player) {
 
-            if (player.hasPermission(Permission.TIME)) {
-                if (doAction.equalsIgnoreCase("set")) player.getInstance().setTime(time.getTicks());
+                if (player.hasPermission(Permission.TIME)) {
+                    if (doAction.equalsIgnoreCase("set")) player.getInstance().setTime(time.getTicks());
+                }
+            } else {
+                sender.sendMessage(Component.text("§4§lOnly players can use this command"));
             }
 
         }, action, type);

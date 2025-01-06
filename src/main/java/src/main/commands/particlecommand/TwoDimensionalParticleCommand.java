@@ -5,7 +5,6 @@ import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentEnum;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.particle.Particle;
-import src.main.commands.arguments.CustomArgumentTypes;
 import src.main.particlegenerator.TwoDimensionalParticleShapes;
 import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
@@ -74,12 +73,15 @@ public class TwoDimensionalParticleCommand extends Command {
             var particleType = context.get(particle);
             var durationOfShape = context.get(duration);
 
-            PermissionablePlayer player = (PermissionablePlayer) sender;
+            if (sender instanceof PermissionablePlayer player) {
 
-            if (player.hasPermission(Permission.PARTICLE_SHAPE)) {
-                spawnShape.apply(player.getInstance(), player.getPosition(), spawnRadiusX, spawnRadiusY, particleType, durationOfShape);
+                if (player.hasPermission(Permission.PARTICLE_SHAPE)) {
+                    spawnShape.apply(player.getInstance(), player.getPosition(), spawnRadiusX, spawnRadiusY, particleType, durationOfShape);
+                } else {
+                    sender.sendMessage(Component.text("§4§lNo permission"));
+                }
             } else {
-                sender.sendMessage(Component.text("§4§lNo permission"));
+                sender.sendMessage(Component.text("§4§lOnly players can use this command"));
             }
         }, twoDimensionalShape, particle, duration, radiusX, radiusY);
 

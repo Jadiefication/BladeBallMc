@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Custom player head creation utility
@@ -90,10 +89,6 @@ public abstract class Heads {
         skull = skull.withTag(Tag.NBT("SkullOwner"), skullOwner);
 
         return skull;
-    }
-
-    public static ItemStack createHead(ItemStack item, Component displayName, List<Component> lore) {
-        return item.withCustomName(displayName).withLore(lore);
     }
 
     public static URL createUrl(String url) throws RuntimeException {

@@ -7,6 +7,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
@@ -18,6 +19,7 @@ import src.main.commands.FillCommand;
 import src.main.commands.GamemodeCommand;
 import src.main.commands.OpCommand;
 import src.main.commands.StopCommand;
+import src.main.commands.debug.DebugCommand;
 import src.main.commands.particlecommand.ThreeDimensionalParticleCommand;
 import src.main.commands.particlecommand.TwoDimensionalParticleCommand;
 import src.main.commands.timecommand.TimeCommand;
@@ -73,7 +75,7 @@ public class Server {
     public static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TwoDimensionalParticleCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ThreeDimensionalParticleCommand());
+                new ThreeDimensionalParticleCommand(), new DebugCommand());
 
         for (Command command : commands) {
             manager.register(command);
@@ -86,5 +88,6 @@ public class Server {
         Nimoh.globalEventHandler.addListener(PlayerUseItemEvent.class, EventFunction::onUse);
         Nimoh.globalEventHandler.addListener(PlayerBlockPlaceEvent.class, EventFunction::onPlace);
         Nimoh.globalEventHandler.addListener(ServerListPingEvent.class, EventFunction::onPing);
+        Nimoh.globalEventHandler.addListener(InventoryPreClickEvent.class, EventFunction::onInventoryClick);
     }
 }

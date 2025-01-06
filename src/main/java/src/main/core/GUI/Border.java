@@ -10,14 +10,15 @@ import net.minestom.server.item.Material;
  */
 public abstract class Border {
 
+    public static ItemStack border = ItemStack.of(Material.GRAY_STAINED_GLASS_PANE)
+            .withCustomName(Component.text(" "))
+            .withCustomModelData(1);
+
     /**
      * Creates glass pane border around inventory
      * @param inventory Target inventory to add border to
      */
     public static void setInventoryBorder(Inventory inventory) {
-
-        ItemStack border = ItemStack.of(Material.GRAY_STAINED_GLASS_PANE)
-                .withCustomName(Component.text(" "));
 
         int size = inventory.getSize();
         int height = size / 9;

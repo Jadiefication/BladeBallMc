@@ -29,21 +29,28 @@ public class OpCommand extends Command {
         addSyntax((commandSender, commandContext) -> {
             final EntityFinder finder = commandContext.get(userName);
             final Player target = finder.findFirstPlayer(commandSender);
-            PermissionablePlayer player = (PermissionablePlayer) commandSender;
+            if (commandSender instanceof PermissionablePlayer player) {
 
-            if (player.hasPermission(Permission.OP)) {
+                if (player.hasPermission(Permission.OP)) {
+                    if (target != null) {
+                        target.setPermissionLevel(4);
+                    } else {
+                        commandSender.sendMessage(Component.text("§4§lNo player with that name"));
+                    }
+                } else {
+                    commandSender.sendMessage(Component.text("§4§lNo permission"));
+                }
+            } else {
                 if (target != null) {
                     target.setPermissionLevel(4);
                 } else {
                     commandSender.sendMessage(Component.text("§4§lNo player with that name"));
                 }
-            } else {
-                commandSender.sendMessage(Component.text("§4§lNo permission"));
             }
         }, userName);
 
         addSyntax((commandSender, context) -> {
-            if (commandSender instanceof Player player && (player.getPermissionLevel() == 4 || ((PermissionablePlayer) player).hasPermission(Permission.OP))) {
+            if (commandSender instanceof PermissionablePlayer player && (player.getPermissionLevel() == 4 || player.hasPermission(Permission.OP))) {
                 player.setPermissionLevel(4);
             }
         });

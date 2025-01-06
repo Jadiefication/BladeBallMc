@@ -2,12 +2,14 @@ package src.main.commands;
 
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentEnum;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.utils.entity.EntityFinder;
+import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
 
 public class GamemodeCommand extends Command {
@@ -38,7 +40,10 @@ public class GamemodeCommand extends Command {
 
         addSyntax((commandSender, commandContext) -> {
             final GameMode switchGamemode = commandContext.get(gamemode);
-            ((PermissionablePlayer) commandSender).setGameMode(switchGamemode);
+            if (commandSender instanceof PermissionablePlayer player && player.hasPermission(Permission.GAMEMODE)) player.setGameMode(switchGamemode);
+            else {
+                commandSender.sendMessage(Component.text("§4§lOnly players can use this command"));
+            }
         }, gamemode);
 
         addSyntax((sender, context) -> {
@@ -46,16 +51,25 @@ public class GamemodeCommand extends Command {
             final EntityFinder entity = context.get(username);
             final Player target = entity.findFirstPlayer(sender);
 
-            if (target == null) {
-                sender.sendMessage(Component.text("§4§lPlayer not found"));
-            } else {
-                try {
-                    target.setGameMode(switchGamemode);
-                } catch (IllegalArgumentException e) {
-                    sender.sendMessage(Component.text("§4§lInvalid gamemode"));
+            if (sender instanceof PermissionablePlayer player) {
+
+                if (player.hasPermission(Permission.GAMEMODE)) {
+                    setGamemode(target, switchGamemode, sender);
+                } else {
+                    sender.sendMessage(Component.text("§4§lNo permission"));
                 }
+            } else {
+                setGamemode(target, switchGamemode, sender);
             }
         }, gamemode, username);
 
+    }
+
+    private static void setGamemode(Player target, GameMode gameMode, CommandSender sender) {
+        if (target == null) {
+            sender.sendMessage(Component.text("§4§lPlayer not found"));
+        } else {
+            target.setGameMode(gameMode);
+        }
     }
 }

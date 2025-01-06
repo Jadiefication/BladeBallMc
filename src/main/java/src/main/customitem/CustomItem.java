@@ -32,6 +32,20 @@ public abstract class CustomItem {
         return item;
     }
 
+    public static ItemStack registerItem(Component name, List<Component> lore, ItemStack item, int customModelData, Consumer<Event> event) {
+        ItemStack newItem;
+        if (customModelData == 0) {
+            newItem = item.withCustomName(name)
+                    .withLore(lore);
+        } else {
+            newItem = item.withCustomModelData(customModelData)
+                    .withCustomName(name)
+                    .withLore(lore);
+        }
+        items.put(newItem, event);
+        return newItem;
+    }
+
     public static Map<ItemStack, Consumer<Event>> getItemMap() {
         return items;
     }

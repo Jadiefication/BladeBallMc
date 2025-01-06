@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
 import net.minestom.server.event.player.PlayerBlockPlaceEvent;
@@ -11,10 +12,12 @@ import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
+import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import src.main.Nimoh;
 import src.main.Server;
 import src.main.commands.debug.gui.DebugGui;
+import src.main.core.GUI.Border;
 import src.main.customitem.CustomItem;
 import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
@@ -50,7 +53,6 @@ public abstract class EventFunction {
         }
         event.setSpawningInstance(Nimoh.instanceContainer);
         player.setRespawnPoint(new Pos(0.0, 44.0, 0.0));
-        player.openInventory(new DebugGui());
     }
 
     public static void onPlace(PlayerBlockPlaceEvent event) {
@@ -99,5 +101,18 @@ public abstract class EventFunction {
 
     public static void onPing(ServerListPingEvent event) {
         event.getResponseData().setMaxPlayer(20);
+    }
+
+    public static void onInventoryClick(InventoryPreClickEvent event) {
+        AbstractInventory inventory = event.getInventory();
+
+        if (inventory instanceof DebugGui) {
+            ItemStack item = event.getClickedItem();
+            if (item.equals(Border.border)) {
+                event.setCancelled(true);
+            } else if (item.equals(DebugGui.createPerformanceCheckerItem())) {
+                CustomItem.getItemFunctionality(DebugGui.createPerformanceCheckerItem()).accept(event);
+            }
+        }
     }
 }

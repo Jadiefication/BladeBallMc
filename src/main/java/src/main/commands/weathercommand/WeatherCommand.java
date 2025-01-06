@@ -29,10 +29,13 @@ public class WeatherCommand extends Command {
         addSyntax((sender, context) -> {
             final String doAction = context.get(action);
             final WeatherEnum weather = context.get(type);
-            final PermissionablePlayer player = (PermissionablePlayer) sender;
+            if (sender instanceof PermissionablePlayer player) {
 
-            if (player.hasPermission(Permission.WEATHER)) {
-                if (doAction.equalsIgnoreCase("set")) player.getInstance().setWeather(weather.getWeather());
+                if (player.hasPermission(Permission.WEATHER)) {
+                    if (doAction.equalsIgnoreCase("set")) player.getInstance().setWeather(weather.getWeather());
+                }
+            } else {
+                sender.sendMessage(Component.text("§4§lOnly players can use this command"));
             }
 
         }, action, type);
