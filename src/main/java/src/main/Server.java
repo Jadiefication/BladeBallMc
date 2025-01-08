@@ -30,9 +30,9 @@ import java.io.File;
 import java.net.URI;
 import java.util.List;
 
-public class Server {
+public sealed interface Server permits Nimoh {
 
-    public static void sendPackInfo(Player player) {
+    static void sendPackInfo(Player player) {
         player.sendResourcePacks(ResourcePackRequest.resourcePackRequest()
                 .packs(getPackInfo())
                 .prompt(Component.text("Please use this texture pack for a seamless experience."))
@@ -48,7 +48,7 @@ public class Server {
                 .build();
     }
 
-    public static void worldManager(InstanceManager manager, List<String> worldPaths) {
+    static void worldManager(InstanceManager manager, List<String> worldPaths) {
 
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
             manager.getInstances().forEach(instance -> {
@@ -68,11 +68,11 @@ public class Server {
         });
     }
 
-    public static net.minestom.server.network.socket.Server getServer() {
+    static net.minestom.server.network.socket.Server getServer() {
         return MinecraftServer.getServer();
     }
 
-    public static void registerCommands() {
+    static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TwoDimensionalParticleCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
                 new ThreeDimensionalParticleCommand(), new DebugCommand());
@@ -82,7 +82,7 @@ public class Server {
         }
     }
 
-    public static void implementListeners() {
+    static void implementListeners() {
         Nimoh.globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, EventFunction::onJoin);
         Nimoh.globalEventHandler.addListener(PlayerBlockBreakEvent.class, EventFunction::onBreak);
         Nimoh.globalEventHandler.addListener(PlayerUseItemEvent.class, EventFunction::onUse);

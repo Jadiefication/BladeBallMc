@@ -9,22 +9,16 @@ import net.minestom.server.utils.entity.EntityFinder;
 import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
 
-public class OpCommand extends Command {
+public class OpCommand extends Command implements CommandLogic {
 
     public OpCommand() {
         super("op");
 
-        setDefaultExecutor((sender, context) -> {
-            sender.sendMessage(Component.text("§4§lSomething went wrong"));
-        });
-
         var userName = ArgumentType.Entity("user").onlyPlayers(true);
 
-        userName.setCallback(((commandSender, e) -> {
-            if (MinecraftServer.getConnectionManager().findOnlinePlayer(e.getInput()) == null) {
-                commandSender.sendMessage(Component.text("§4§lPlayer not found"));
-            }
-        }));
+        defaultExecutor(this);
+
+        argumentCallbacks(userName);
 
         addSyntax((commandSender, commandContext) -> {
             final EntityFinder finder = commandContext.get(userName);

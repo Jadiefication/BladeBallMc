@@ -10,10 +10,14 @@ import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ParticleGenerator {
 
-    private static void sendPackets(Instance instance, Vec start, Vec end, Particle particle, double duration) {
+    private static List<Task> sendPackets(Instance instance, Vec start, Vec end, Particle particle, double duration) {
         int particles = 20;
+        List<Task> particleTasks = new ArrayList<>();
         for (int j = 0; j < particles; j++) {
             double progress = (double) j / particles;
             double x = start.x() + (end.x() - start.x()) * progress;
@@ -33,15 +37,20 @@ public class ParticleGenerator {
                 ));
             }, TaskSchedule.tick(1), TaskSchedule.tick(1)); // Repeat every tick
 
+            particleTasks.add(particleTask);
+
 // Schedule task cancellation
             scheduler.scheduleTask(() -> {
                 particleTask.cancel();
                 return TaskSchedule.nextTick();
             }, TaskSchedule.seconds((long) duration));
+
         }
+
+        return particleTasks;
     }
 
-    public static void spawnOctagonParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+    public static List<List<Task>> spawnOctagonParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
         // Calculate the 8 points of the octagon
         Vec[] points = new Vec[8];
 
@@ -53,16 +62,20 @@ public class ParticleGenerator {
             points[i] = new Vec(x, center.y(), z);
         }
 
+        List<List<Task>> tasks = new ArrayList<>();
+
         // Connect the 8 points with particles
         for (int i = 0; i < 8; i++) {
             Vec start = points[i];
             Vec end = points[(i + 1) % 8];
 
-            sendPackets(instance, start, end, particle, duration);
+            tasks.add(sendPackets(instance, start, end, particle, duration));
         }
+
+        return tasks;
     }
 
-    public static void spawnSquareParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+    public static List<List<Task>> spawnSquareParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
         Vec[] points = new Vec[4];
 
         for (int i = 0; i < 4; i++) {
@@ -74,17 +87,23 @@ public class ParticleGenerator {
             points[i] = new Vec(x, center.y(), z);
         }
 
+        List<List<Task>> tasks = new ArrayList<>();
+
         for (int i = 0; i < 4; i++) {
             Vec start = points[i];
             Vec end = points[(i+1) % 4];
 
-            sendPackets(instance, start, end, particle, duration);
+            tasks.add(sendPackets(instance, start, end, particle, duration));
         }
+
+        return tasks;
     }
 
-    public static void spawnSphereParticles(Instance instance, Pos center, double radiusX, double radiusY, double radiusZ, Particle particle, double duration) {
+    public static List<List<Task>> spawnSphereParticles(Instance instance, Pos center, double radiusX, double radiusY, double radiusZ, Particle particle, double duration) {
         double phi = Math.PI * (3 - Math.sqrt(5));
         int points = 200; // Adjust for desired density
+
+        List<List<Task>> tasks = new ArrayList<>();
 
         for (int i = 0; i < points; i++) {
             double y = 1 - (i / (double)(points - 1)) * 2;
@@ -109,8 +128,10 @@ public class ParticleGenerator {
 
             Vec end = new Vec(center.x() + nextX, center.y() + nextY, center.z() + nextZ);
 
-            sendPackets(instance, start, end, particle, duration);
+            tasks.add(sendPackets(instance, start, end, particle, duration));
         }
+
+        return tasks;
     }
 
 }

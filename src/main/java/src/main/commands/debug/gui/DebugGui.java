@@ -7,6 +7,7 @@ import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 import net.minestom.server.monitoring.BenchmarkManager;
 import net.minestom.server.timer.SchedulerManager;
 import net.minestom.server.timer.Task;
@@ -79,7 +80,11 @@ public class DebugGui extends Inventory {
 
     public DebugGui() {
         super(InventoryType.CHEST_6_ROW, Component.text("Debug Inventory"));
+        List<Material> items = List.of(Material.BARRIER, Material.COMMAND_BLOCK, Material.STRUCTURE_VOID, Material.LIGHT);
         Border.setInventoryBorder(this);
         setItemStack(40, createPerformanceCheckerItem());
+        for (int i = 0; i < items.size(); i++) {
+            setItemStack(i + 10, ItemStack.of(items.get(i)));
+        }
     }
 }

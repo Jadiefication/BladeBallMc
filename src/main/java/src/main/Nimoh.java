@@ -9,17 +9,23 @@ import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.timer.Scheduler;
+import net.minestom.server.timer.TaskSchedule;
+import src.main.core.ball.BladeBall;
 import src.main.permission.PermissionHandler;
 import src.main.permission.PermissionablePlayer;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Scanner;
 
 
-public class Nimoh {
+public non-sealed class Nimoh implements Server {
 
     public static GlobalEventHandler globalEventHandler;
     public static InstanceContainer instanceContainer;
+    public static Scheduler scheduler;
 
     public static void main(String[] args) {
         MinecraftServer server = MinecraftServer.init();
@@ -28,6 +34,7 @@ public class Nimoh {
         Scanner scanner = new Scanner(System.in);
         instanceContainer = instanceManager.createInstanceContainer(anvilLoader);
         globalEventHandler = MinecraftServer.getGlobalEventHandler();
+        scheduler = MinecraftServer.getSchedulerManager();
 
         MinecraftServer.getConnectionManager().setPlayerProvider(PermissionablePlayer::new);
 
@@ -48,6 +55,7 @@ public class Nimoh {
         PermissionHandler.startHandler();
 
         server.start("0.0.0.0", scanner.nextInt());
+        scheduleUpdate();
 
         new Thread(() -> {
             while (true) {
@@ -57,5 +65,25 @@ public class Nimoh {
                 }
             }
         }).start();
+    }
+
+    private static void scheduleUpdate() {
+        try {
+            Method method = BladeBall.class.getDeclaredMethod("update", InstanceContainer.class);
+            scheduler.scheduleTask(() -> {
+                try {
+                    method.invoke(new BladeBall(), instanceContainer);
+                } catch (IllegalAccessException e) {
+                    System.out.println("Something went wrong");
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    System.out.println("Something went wrong");
+                    e.printStackTrace();
+                }
+                return TaskSchedule.tick(1);
+            }, TaskSchedule.tick(1));
+        } catch (NoSuchMethodException e) {
+            System.out.println("Could not find method");
+        }
     }
 }

@@ -2,23 +2,24 @@ package src.main.commands;
 
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
+import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
 import src.main.permission.PermissionablePlayer;
 
-public class FillCommand extends Command {
+public class FillCommand extends Command implements CommandLogic {
 
     public FillCommand() {
         super("fill");
 
-        setDefaultExecutor(((sender, context) -> {
-            sender.sendMessage(Component.text("§4§lNo arguments given"));
-        }));
-
         var startPoint = ArgumentType.RelativeBlockPosition("start");
         var endPoint = ArgumentType.RelativeBlockPosition("end");
         var block = ArgumentType.BlockState("block");
+
+        defaultExecutor(this);
+
+        argumentCallbacks(new Argument[]{startPoint, endPoint, block});
 
         addSyntax((sender, context) -> {
 

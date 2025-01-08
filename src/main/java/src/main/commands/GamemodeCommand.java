@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
+import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentEnum;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.entity.GameMode;
@@ -12,31 +13,19 @@ import net.minestom.server.utils.entity.EntityFinder;
 import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
 
-public class GamemodeCommand extends Command {
+import java.lang.reflect.Array;
+
+public class GamemodeCommand extends Command implements CommandLogic {
 
     public GamemodeCommand() {
         super("gamemode");
 
-        setDefaultExecutor((sender, context) -> {
-            sender.sendMessage(Component.text("§4§lNo gamemode given"));
-        });
-
         var gamemode = ArgumentType.Enum("gamemode", GameMode.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
         var username = ArgumentType.Entity("player").onlyPlayers(true);
 
-        username.setCallback(((commandSender, e) -> {
-            if (MinecraftServer.getConnectionManager().findOnlinePlayer(e.getInput()) == null) {
-                commandSender.sendMessage(Component.text("§4§lPlayer not found"));
-            }
-        }));
+        defaultExecutor(this);
 
-        gamemode.setCallback(((commandSender, e) -> {
-            try {
-                GameMode.valueOf(e.getInput());
-            } catch (IllegalArgumentException ex) {
-                commandSender.sendMessage(Component.text("§4§lInvalid gamemode"));
-            }
-        }));
+        argumentCallbacks(new Argument[]{gamemode, username});
 
         addSyntax((commandSender, commandContext) -> {
             final GameMode switchGamemode = commandContext.get(gamemode);

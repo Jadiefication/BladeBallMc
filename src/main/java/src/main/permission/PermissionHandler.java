@@ -14,9 +14,9 @@ import java.util.Map;
 
 public abstract class PermissionHandler {
 
-    private static Map<Player, List<Permission>> playerPermissions = new HashMap<>();
-    private static Map<PermissionableGroup, List<Permission>> groupPermissions = new HashMap<>();
-    private static String url = "jdbc:sqlite:permissions.db";
+    private final static Map<Player, List<Permission>> playerPermissions = new HashMap<>();
+    private final static Map<PermissionableGroup, List<Permission>> groupPermissions = new HashMap<>();
+    private final static String url = "jdbc:sqlite:permissions.db";
 
     public static void startHandler() {
         File file = new File("permissions.db");
