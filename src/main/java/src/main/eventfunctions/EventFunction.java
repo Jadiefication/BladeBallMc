@@ -5,10 +5,7 @@ import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerBlockBreakEvent;
-import net.minestom.server.event.player.PlayerBlockPlaceEvent;
-import net.minestom.server.event.player.PlayerUseItemEvent;
+import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
@@ -64,6 +61,12 @@ public abstract class EventFunction {
         List<Block> rotationList = List.of(Block.OAK_SIGN, Block.SPRUCE_SIGN, Block.BIRCH_SIGN, Block.JUNGLE_SIGN, Block.ACACIA_SIGN, Block.DARK_OAK_SIGN, Block.MANGROVE_SIGN, Block.BAMBOO_SIGN, Block.CRIMSON_SIGN, Block.WARPED_SIGN,
                 Block.CREEPER_HEAD, Block.DRAGON_HEAD, Block.PIGLIN_HEAD, Block.PLAYER_HEAD, Block.ZOMBIE_HEAD, Block.WITHER_SKELETON_SKULL, Block.SKELETON_SKULL,
                 Block.WHITE_BANNER, Block.ORANGE_BANNER, Block.MAGENTA_BANNER, Block.LIGHT_BLUE_BANNER, Block.YELLOW_BANNER, Block.LIME_BANNER, Block.PINK_BANNER, Block.GRAY_BANNER, Block.LIGHT_GRAY_BANNER, Block.CYAN_BANNER, Block.PURPLE_BANNER, Block.BLUE_BANNER, Block.BROWN_BANNER, Block.GREEN_BANNER, Block.RED_BANNER, Block.BLACK_BANNER);
+        List<Block> facingList = List.of(
+                Block.FURNACE, Block.DISPENSER, Block.DROPPER, Block.OBSERVER, Block.PISTON, Block.STICKY_PISTON,
+                Block.HOPPER, Block.LANTERN, Block.WALL_TORCH, Block.LEVER, Block.REDSTONE_TORCH, Block.END_ROD,
+                Block.BELL, Block.GRINDSTONE, Block.LOOM, Block.STONECUTTER
+        );
+
 
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
         Block block = event.getBlock();
@@ -90,8 +93,10 @@ public abstract class EventFunction {
             } else if (rotationList.contains(block)) {
                 int rotation = (int) ((Math.atan2(direction.z(), direction.x()) * 16.0 / (2 * Math.PI) + 16.5) % 16);
                 directedBlock = block.withProperty("rotation", String.valueOf(rotation));
-            } else {
+            } else if (facingList.contains(block)) {
                 directedBlock = block.withProperty("facing", face.name().toLowerCase());
+            } else {
+                directedBlock = block;
             }
             event.setBlock(directedBlock);
         } else {

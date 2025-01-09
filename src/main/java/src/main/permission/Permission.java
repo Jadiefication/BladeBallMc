@@ -9,5 +9,5 @@ public enum Permission {
     WEATHER,
     GAMEMODE,
     STOP,
-    BREAK
+    START, BREAK
 }

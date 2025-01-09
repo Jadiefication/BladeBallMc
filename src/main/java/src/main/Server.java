@@ -15,10 +15,7 @@ import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
-import src.main.commands.FillCommand;
-import src.main.commands.GamemodeCommand;
-import src.main.commands.OpCommand;
-import src.main.commands.StopCommand;
+import src.main.commands.*;
 import src.main.commands.debug.DebugCommand;
 import src.main.commands.particlecommand.ThreeDimensionalParticleCommand;
 import src.main.commands.particlecommand.TwoDimensionalParticleCommand;
@@ -75,7 +72,7 @@ public sealed interface Server permits Nimoh {
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TwoDimensionalParticleCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ThreeDimensionalParticleCommand(), new DebugCommand());
+                new ThreeDimensionalParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand());
 
         for (Command command : commands) {
             manager.register(command);
@@ -89,5 +86,6 @@ public sealed interface Server permits Nimoh {
         Nimoh.globalEventHandler.addListener(PlayerBlockPlaceEvent.class, EventFunction::onPlace);
         Nimoh.globalEventHandler.addListener(ServerListPingEvent.class, EventFunction::onPing);
         Nimoh.globalEventHandler.addListener(InventoryPreClickEvent.class, EventFunction::onInventoryClick);
+
     }
 }

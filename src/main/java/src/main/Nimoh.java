@@ -10,6 +10,7 @@ import net.minestom.server.instance.LightingChunk;
 import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.timer.Scheduler;
+import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 import src.main.core.ball.BladeBall;
 import src.main.permission.PermissionHandler;
@@ -21,11 +22,13 @@ import java.util.List;
 import java.util.Scanner;
 
 
-public non-sealed class Nimoh implements Server {
+public abstract non-sealed class Nimoh implements Server {
 
     public static GlobalEventHandler globalEventHandler;
     public static InstanceContainer instanceContainer;
     public static Scheduler scheduler;
+    public static Task updateTask;
+    private static Method startMethod;
 
     public static void main(String[] args) {
         MinecraftServer server = MinecraftServer.init();
@@ -69,10 +72,11 @@ public non-sealed class Nimoh implements Server {
 
     private static void scheduleUpdate() {
         try {
-            Method method = BladeBall.class.getDeclaredMethod("update", InstanceContainer.class);
-            scheduler.scheduleTask(() -> {
+            Method updateMethod = BladeBall.class.getDeclaredMethod("update", InstanceContainer.class);
+            startMethod = BladeBall.class.getDeclaredMethod("start", InstanceContainer.class);
+            updateTask = scheduler.scheduleTask(() -> {
                 try {
-                    method.invoke(new BladeBall(), instanceContainer);
+                    updateMethod.invoke(new BladeBall(), instanceContainer);
                 } catch (IllegalAccessException e) {
                     System.out.println("Something went wrong");
                     e.printStackTrace();
@@ -84,6 +88,18 @@ public non-sealed class Nimoh implements Server {
             }, TaskSchedule.tick(1));
         } catch (NoSuchMethodException e) {
             System.out.println("Could not find method");
+        }
+    }
+
+    public static void startBladeBall() {
+        try {
+            startMethod.invoke(new BladeBall(), instanceContainer);
+        } catch (IllegalAccessException e) {
+            System.out.println("Something went wrong");
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            System.out.println("Something went wrong");
+            e.printStackTrace();
         }
     }
 }

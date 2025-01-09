@@ -39,11 +39,13 @@ public class ParticleGenerator {
 
             particleTasks.add(particleTask);
 
-// Schedule task cancellation
-            scheduler.scheduleTask(() -> {
-                particleTask.cancel();
-                return TaskSchedule.nextTick();
-            }, TaskSchedule.seconds((long) duration));
+            if (!Double.isInfinite(duration)) {
+                // Schedule task cancellation
+                scheduler.scheduleTask(() -> {
+                    particleTask.cancel();
+                    return TaskSchedule.nextTick();
+                }, TaskSchedule.seconds((long) duration));
+            }
 
         }
 

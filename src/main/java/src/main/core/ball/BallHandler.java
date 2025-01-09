@@ -37,15 +37,12 @@ public sealed interface BallHandler permits BladeBall {
             return TaskSchedule.tick(1);
         }, TaskSchedule.tick(1));
 
-        BallState.dtCounter = scheduler.scheduleTask(() -> {
-            BallState.dt++;
-            return TaskSchedule.tick(1);
-        }, TaskSchedule.tick(1));
-
         BallState.findFirstTarget(container);
         BallState.isActive = true;
         BallState.firstTarget = true;
     }
+
+    void start(InstanceContainer container);
 
 
     default void findTarget(InstanceContainer container) {
@@ -60,9 +57,12 @@ public sealed interface BallHandler permits BladeBall {
         public static boolean isActive = false;
         public static boolean stayingStill = true;
         public static List<List<Task>> tasks;
-        public static Pos ballPosition = new Pos(0.0, 43.0, 0.0);
+        public static Pos ballPosition = new Pos(0.5, 45.0, 0.5);
         public static int dt;
-        public static Task dtCounter;
+        public final static Task dtCounter = MinecraftServer.getSchedulerManager().scheduleTask(() -> {
+            BallState.dt++;
+            return TaskSchedule.tick(1);
+        }, TaskSchedule.tick(1));;
         public static boolean firstTarget;
 
         public static Player findFirstTarget(InstanceContainer container) {
