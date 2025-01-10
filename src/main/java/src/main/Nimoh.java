@@ -28,11 +28,12 @@ public abstract non-sealed class Nimoh implements Server {
     public static InstanceContainer instanceContainer;
     public static Scheduler scheduler;
     public static Task updateTask;
-    private static Method startMethod;
+    public static BladeBall game;
+    public static InstanceManager instanceManager;
 
     public static void main(String[] args) {
         MinecraftServer server = MinecraftServer.init();
-        InstanceManager instanceManager = MinecraftServer.getInstanceManager();
+        instanceManager = MinecraftServer.getInstanceManager();
         AnvilLoader anvilLoader = new AnvilLoader("worlds/world");
         Scanner scanner = new Scanner(System.in);
         instanceContainer = instanceManager.createInstanceContainer(anvilLoader);
@@ -41,16 +42,9 @@ public abstract non-sealed class Nimoh implements Server {
 
         MinecraftServer.getConnectionManager().setPlayerProvider(PermissionablePlayer::new);
 
-        instanceContainer.setGenerator(unit -> {
-            unit.modifier().setBlock(new Pos(0, 42, 0), Block.STONE);
-        });
+        loadWorld(anvilLoader);
 
-        instanceContainer.setChunkLoader(anvilLoader);
-        Server.worldManager(instanceManager, List.of("worlds/world"));
-
-        instanceContainer.setChunkSupplier(LightingChunk::new);
-
-        Server.implementListeners();
+        Server.implementListeners(globalEventHandler);
         Server.registerCommands();
 
         MojangAuth.init();
@@ -58,7 +52,7 @@ public abstract non-sealed class Nimoh implements Server {
         PermissionHandler.startHandler();
 
         server.start("0.0.0.0", scanner.nextInt());
-        scheduleUpdate();
+        game = new BladeBall();
 
         new Thread(() -> {
             while (true) {
@@ -70,36 +64,25 @@ public abstract non-sealed class Nimoh implements Server {
         }).start();
     }
 
-    private static void scheduleUpdate() {
-        try {
-            Method updateMethod = BladeBall.class.getDeclaredMethod("update", InstanceContainer.class);
-            startMethod = BladeBall.class.getDeclaredMethod("start", InstanceContainer.class);
-            updateTask = scheduler.scheduleTask(() -> {
-                try {
-                    updateMethod.invoke(new BladeBall(), instanceContainer);
-                } catch (IllegalAccessException e) {
-                    System.out.println("Something went wrong");
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    System.out.println("Something went wrong");
-                    e.printStackTrace();
-                }
-                return TaskSchedule.tick(1);
-            }, TaskSchedule.tick(1));
-        } catch (NoSuchMethodException e) {
-            System.out.println("Could not find method");
-        }
+    private static void loadWorld(AnvilLoader anvilLoader) {
+        instanceContainer.setGenerator(unit -> {
+            unit.modifier().setBlock(new Pos(0, 42, 0), Block.STONE);
+        });
+
+        instanceContainer.setChunkLoader(anvilLoader);
+        Server.worldManager(instanceManager, List.of("worlds/world"));
+
+        instanceContainer.setChunkSupplier(LightingChunk::new);
     }
 
-    public static void startBladeBall() {
-        try {
-            startMethod.invoke(new BladeBall(), instanceContainer);
-        } catch (IllegalAccessException e) {
-            System.out.println("Something went wrong");
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            System.out.println("Something went wrong");
-            e.printStackTrace();
-        }
+    public static void startBladeBall(BladeBall game) {
+        // Start the game
+        game.start(instanceContainer);
+
+        // Schedule the update task after the game has started
+        updateTask = scheduler.scheduleTask(() -> {
+            game.update(instanceContainer);
+            return TaskSchedule.tick(1);
+        }, TaskSchedule.tick(1));
     }
 }

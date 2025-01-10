@@ -7,6 +7,7 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
 import net.minestom.server.event.player.PlayerBlockBreakEvent;
@@ -21,13 +22,14 @@ import src.main.commands.particlecommand.ThreeDimensionalParticleCommand;
 import src.main.commands.particlecommand.TwoDimensionalParticleCommand;
 import src.main.commands.timecommand.TimeCommand;
 import src.main.commands.weathercommand.WeatherCommand;
+import src.main.core.packet.PacketHandler;
 import src.main.eventfunctions.EventFunction;
 
 import java.io.File;
 import java.net.URI;
 import java.util.List;
 
-public sealed interface Server permits Nimoh {
+public sealed interface Server extends PacketHandler permits Nimoh {
 
     static void sendPackInfo(Player player) {
         player.sendResourcePacks(ResourcePackRequest.resourcePackRequest()
@@ -57,11 +59,6 @@ public sealed interface Server permits Nimoh {
             }
             System.out.println("Saving chunks...");
             manager.getInstances().forEach(Instance::saveChunksToStorage);
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
         });
     }
 
@@ -79,7 +76,8 @@ public sealed interface Server permits Nimoh {
         }
     }
 
-    static void implementListeners() {
+    static void implementListeners(GlobalEventHandler handler) {
+        PacketHandler.start(handler);
         Nimoh.globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, EventFunction::onJoin);
         Nimoh.globalEventHandler.addListener(PlayerBlockBreakEvent.class, EventFunction::onBreak);
         Nimoh.globalEventHandler.addListener(PlayerUseItemEvent.class, EventFunction::onUse);

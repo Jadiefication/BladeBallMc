@@ -3,6 +3,7 @@ package src.main.eventfunctions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
@@ -15,6 +16,10 @@ import src.main.Nimoh;
 import src.main.Server;
 import src.main.commands.debug.gui.DebugGui;
 import src.main.core.GUI.Border;
+import src.main.core.ball.BallHandler;
+import src.main.core.ball.BladeBall;
+import src.main.core.ball.entity.BallEntity;
+import src.main.core.ball.events.BallHitEvent;
 import src.main.customitem.CustomItem;
 import src.main.permission.Permission;
 import src.main.permission.PermissionablePlayer;
@@ -118,6 +123,13 @@ public abstract class EventFunction {
             } else if (item.equals(DebugGui.createPerformanceCheckerItem())) {
                 CustomItem.getItemFunctionality(DebugGui.createPerformanceCheckerItem()).accept(event);
             }
+        }
+    }
+
+    public static void onBallHit(BallHitEvent event) {
+        Entity entity = event.getAttackedEntity();
+        if (entity instanceof BallEntity && entity.equals(BladeBall.entity)) {
+            BallHandler.BallState.playerWhomHitTheBall = event.getPlayer();
         }
     }
 }
