@@ -1,5 +1,6 @@
 package io.jadiefication;
 
+import io.jadiefication.core.data.player.PlayerDataHandler;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.event.GlobalEventHandler;
@@ -18,9 +19,11 @@ import io.jadiefication.permission.PermissionablePlayer;
 
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
-public abstract non-sealed class Nimoh implements Server {
+public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
 
     public static GlobalEventHandler globalEventHandler;
     public static InstanceContainer instanceContainer;
@@ -28,6 +31,7 @@ public abstract non-sealed class Nimoh implements Server {
     public static Task updateTask;
     public static BladeBall game;
     public static InstanceManager instanceManager;
+    public static final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public static void main(String[] args) {
         MinecraftServer server = MinecraftServer.init();
@@ -48,6 +52,8 @@ public abstract non-sealed class Nimoh implements Server {
         MojangAuth.init();
 
         PermissionHandler.startHandler();
+
+        PlayerDataHandler.start();
 
         server.start("0.0.0.0", scanner.nextInt());
         game = new BladeBall();

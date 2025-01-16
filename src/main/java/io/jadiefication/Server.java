@@ -8,12 +8,11 @@ import net.minestom.server.command.CommandManager;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
+import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
-import net.minestom.server.event.player.AsyncPlayerConfigurationEvent;
-import net.minestom.server.event.player.PlayerBlockBreakEvent;
-import net.minestom.server.event.player.PlayerBlockPlaceEvent;
-import net.minestom.server.event.player.PlayerUseItemEvent;
+import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 import io.jadiefication.commands.*;
 import io.jadiefication.commands.debug.DebugCommand;
@@ -56,10 +55,7 @@ public sealed interface Server permits Nimoh {
                 boolean ignored = worldFolder.delete();
             }
             System.out.println("Saving chunks...");
-            manager.getInstances().forEach(instance -> {
-                instance.saveChunksToStorage();
-
-            });
+            manager.getInstances().forEach(Instance::saveChunksToStorage);
         });
     }
 
@@ -74,12 +70,14 @@ public sealed interface Server permits Nimoh {
     }
 
     static void implementListeners(GlobalEventHandler handler) {
-        Nimoh.globalEventHandler.addListener(AsyncPlayerConfigurationEvent.class, EventFunction::onJoin);
-        Nimoh.globalEventHandler.addListener(PlayerBlockBreakEvent.class, EventFunction::onBreak);
-        Nimoh.globalEventHandler.addListener(PlayerUseItemEvent.class, EventFunction::onUse);
-        Nimoh.globalEventHandler.addListener(PlayerBlockPlaceEvent.class, EventFunction::onPlace);
-        Nimoh.globalEventHandler.addListener(ServerListPingEvent.class, EventFunction::onPing);
-        Nimoh.globalEventHandler.addListener(InventoryPreClickEvent.class, EventFunction::onInventoryClick);
+        handler.addListener(AsyncPlayerConfigurationEvent.class, EventFunction::onJoin);
+        handler.addListener(PlayerBlockBreakEvent.class, EventFunction::onBreak);
+        handler.addListener(PlayerUseItemEvent.class, EventFunction::onUse);
+        handler.addListener(PlayerBlockPlaceEvent.class, EventFunction::onPlace);
+        handler.addListener(ServerListPingEvent.class, EventFunction::onPing);
+        handler.addListener(InventoryPreClickEvent.class, EventFunction::onInventoryClick);
+        handler.addListener(PlayerDisconnectEvent.class, EventFunction::onLeave);
+        handler.addListener(EntityAttackEvent.class, EventFunction::onBallHit);
 
     }
 }

@@ -1,12 +1,8 @@
 package io.jadiefication.permission;
 
-import io.ebean.Database;
-import io.ebean.DatabaseFactory;
-import io.ebean.config.DatabaseConfig;
 import net.kyori.adventure.text.TextComponent;
 import net.minestom.server.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import io.jadiefication.permission.database.player.PlayerPermissionEntry;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,29 +14,53 @@ import java.util.Map;
 
 public abstract class PermissionHandler {
 
-    private final static Map<Player, List<Permission>> playerPermissions = new HashMap<>();
-    private final static Map<PermissionableGroup, List<Permission>> groupPermissions = new HashMap<>();
-    public static Database permissionDatabase;
+    private static Map<Player, List<Permission>> playerPermissions = new HashMap<>();
+    private static Map<PermissionableGroup, List<Permission>> groupPermissions = new HashMap<>();
+    private static String url = "jdbc:sqlite:permissions.db";
 
     public static void startHandler() {
         File file = new File("permissions.db");
+        if (!file.exists()) {
             try {
+                file.createNewFile();
                 boolean ignored = file.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
         startDatabase();
     }
 
     private static void startDatabase() {
-        DatabaseConfig permissionConfig = new DatabaseConfig();
-        permissionConfig.setName("permissions");
+        try (Connection connection = DriverManager.getConnection(url)) {
+            // Create the tables if they do not exist
+            String createPlayerPermissionsTable = """
+                CREATE TABLE IF NOT EXISTS player_permissions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    player_uuid TEXT NOT NULL,
+                    permission TEXT NOT NULL
+                )
+            """;
 
-        permissionDatabase = DatabaseFactory.create(permissionConfig);
+            String createGroupPermissionsTable = """
+                CREATE TABLE IF NOT EXISTS group_permissions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    group_name TEXT NOT NULL,
+                    permission TEXT NOT NULL
+                )
+            """;
+
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(createPlayerPermissionsTable);
+                statement.execute(createGroupPermissionsTable);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void addPermission(@NotNull Player player, @NotNull Permission permission) {
-        //PlayerPermissionEntry playerEntry =
+        doSQL("INSERT INTO player_permissions (player_uuid, permission) VALUES (?, ?)", player, permission);
 
         /*List<Permission> permissionList = getPermissions(player);
         permissionList.add(permission);
@@ -48,7 +68,7 @@ public abstract class PermissionHandler {
     }
 
     public static void addPermission(@NotNull PermissionableGroup group, @NotNull Permission permission) {
-        //doSQL("INSERT INTO group_permissions (group_name, permission) VALUES (?, ?)", group, permission);
+        doSQL("INSERT INTO group_permissions (group_name, permission) VALUES (?, ?)", group, permission);
 
         /*List<Permission> permissionList = getPermissions(group);
         permissionList.add(permission);
@@ -56,7 +76,7 @@ public abstract class PermissionHandler {
     }
 
     public static void removePermission(@NotNull Player player, @NotNull Permission permission) {
-        //doSQL("DELETE FROM player_permissions WHERE player_uuid = ? AND permission = ?", player, permission);
+        doSQL("DELETE FROM player_permissions WHERE player_uuid = ? AND permission = ?", player, permission);
 
         /*List<Permission> permissionList = getPermissions(player);
         permissionList.remove(permission);
@@ -64,7 +84,7 @@ public abstract class PermissionHandler {
     }
 
     public static void removePermission(@NotNull PermissionableGroup group, @NotNull Permission permission) {
-        //doSQL("DELETE FROM group_permissions WHERE group_name = ? AND permission = ?", group, permission);
+        doSQL("DELETE FROM group_permissions WHERE group_name = ? AND permission = ?", group, permission);
 
         /*List<Permission> permissionList = getPermissions(group);
         permissionList.remove(permission);
@@ -73,7 +93,7 @@ public abstract class PermissionHandler {
 
     public static List<Permission> getPermissions(@NotNull Player player) {
         List<Permission> permissions = new ArrayList<>();
-        /*try (Connection connection = DriverManager.getConnection(url)) {
+        try (Connection connection = DriverManager.getConnection(url)) {
             String sql = "SELECT permission FROM player_permissions WHERE player_uuid = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, player.getUuid().toString());
@@ -84,14 +104,14 @@ public abstract class PermissionHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }*/
+        }
 
         return permissions;
     }
 
     public static List<Permission> getPermissions(@NotNull PermissionableGroup group) {
         List<Permission> permissions = new ArrayList<>();
-        /*try (Connection connection = DriverManager.getConnection(url)) {
+        try (Connection connection = DriverManager.getConnection(url)) {
             String sql = "SELECT permission FROM group_permissions WHERE group_name = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, ((TextComponent) group.getName()).content());
@@ -102,13 +122,13 @@ public abstract class PermissionHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }*/
+        }
 
         return permissions;
     }
 
     public static void setPermissions(@NotNull Player player, @NotNull List<Permission> permissionList) {
-        /*try (Connection connection = DriverManager.getConnection(url)) {
+        try (Connection connection = DriverManager.getConnection(url)) {
             String sql = "DELETE FROM player_permissions WHERE player_uuid = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, player.getUuid().toString());
@@ -124,12 +144,12 @@ public abstract class PermissionHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }*/
+        }
         //playerPermissions.replace(player, permissionList);
     }
 
     public static void setPermissions(@NotNull PermissionableGroup group, @NotNull List<Permission> permissionList) {
-        /*try (Connection connection = DriverManager.getConnection(url)) {
+        try (Connection connection = DriverManager.getConnection(url)) {
             String sql = "DELETE FROM player_permissions WHERE group_name = ?";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 statement.setString(1, ((TextComponent) group.getName()).content());
@@ -145,8 +165,31 @@ public abstract class PermissionHandler {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }*/
+        }
         //groupPermissions.replace(group, permissionList);
     }
 
+    private static void doSQL(String sql, PermissionableGroup group, Permission permission) {
+        try (Connection connection = DriverManager.getConnection(url)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, ((TextComponent) group.getName()).content());
+                preparedStatement.setString(2, permission.toString());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void doSQL(String sql, Player player, Permission permission) {
+        try (Connection connection = DriverManager.getConnection(url)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+                preparedStatement.setString(1, player.getUuid().toString());
+                preparedStatement.setString(2, permission.name());
+                preparedStatement.executeUpdate();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

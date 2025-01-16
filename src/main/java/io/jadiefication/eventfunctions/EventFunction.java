@@ -1,10 +1,12 @@
 package io.jadiefication.eventfunctions;
 
+import io.jadiefication.core.data.player.PlayerDataHandler;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
+import net.minestom.server.entity.Player;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
@@ -25,8 +27,12 @@ import io.jadiefication.permission.PermissionablePlayer;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-public abstract class EventFunction {
+import static io.jadiefication.Nimoh.executorService;
+
+public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onBreak(PlayerBlockBreakEvent event) {
         ItemStack item = ItemStack.builder(Objects.requireNonNull(event.getBlock().registry().material())).build();
@@ -48,13 +54,35 @@ public abstract class EventFunction {
 
     public static void onJoin(AsyncPlayerConfigurationEvent event) {
         final PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
-        Server.sendPackInfo(player);
-        if (player.getName().equals(Component.text("Jadiefication"))) {
-            player.setPermissionLevel(4);
-        }
+
+        // Set the spawning instance immediately in the main thread to avoid NullPointerException
         event.setSpawningInstance(Nimoh.instanceContainer);
-        player.setRespawnPoint(new Pos(0.0, 44.0, 0.0));
+
+        // Use a thread pool for better management of asynchronous tasks
+        executorService.submit(() -> {
+            synchronized (player) {
+                // Perform asynchronous tasks like sending pack info and getting player data
+                Server.sendPackInfo(player);
+                PlayerDataHandler.getData(player);
+            }
+
+            // Perform other logic after player data is loaded
+            if (player.getName().equals(Component.text("Jadiefication"))) {
+                player.setPermissionLevel(4);
+            }
+
+            // Set the respawn point after all other tasks are completed
+            player.setRespawnPoint(new Pos(0.0, 44.0, 0.0));
+        });
     }
+
+    public static void onLeave(PlayerDisconnectEvent event) {
+        executorService.submit(() -> {
+            final Player player = event.getPlayer();
+            PlayerDataHandler.updateData(player);
+        });
+    }
+
 
     public static void onPlace(PlayerBlockPlaceEvent event) {
 
