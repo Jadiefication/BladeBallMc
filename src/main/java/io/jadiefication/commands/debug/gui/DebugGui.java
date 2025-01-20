@@ -1,5 +1,6 @@
 package io.jadiefication.commands.debug.gui;
 
+import io.jadiefication.core.ball.BallHandler;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
@@ -21,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DebugGui extends Inventory {
 
@@ -86,5 +88,10 @@ public class DebugGui extends Inventory {
         for (int i = 0; i < items.size(); i++) {
             setItemStack(i + 10, ItemStack.of(items.get(i)));
         }
+        AtomicInteger j = new AtomicInteger();
+        BallHandler.BallState.tasks.forEach(tasks -> tasks.forEach(ignored -> j.getAndIncrement()));
+        setItemStack(14, ItemStack.builder(Material.DEBUG_STICK)
+                .customName(Component.text(j.get() + " Particle Tasks"))
+                .build());
     }
 }
