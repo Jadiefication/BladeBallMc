@@ -9,6 +9,7 @@ import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
@@ -78,6 +79,7 @@ public sealed interface Server permits Nimoh {
         handler.addListener(InventoryPreClickEvent.class, EventFunction::onInventoryClick);
         handler.addListener(PlayerDisconnectEvent.class, EventFunction::onLeave);
         handler.addListener(EntityAttackEvent.class, EventFunction::onBallHit);
+        handler.addListener(InventoryOpenEvent.class, EventFunction::onInventoryOpen);
 
     }
 }

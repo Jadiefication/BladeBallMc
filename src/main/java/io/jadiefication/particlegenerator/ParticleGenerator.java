@@ -3,7 +3,6 @@ package io.jadiefication.particlegenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
@@ -29,15 +28,17 @@ public class ParticleGenerator {
 
             Scheduler scheduler = MinecraftServer.getSchedulerManager();
 
+            ParticlePacket packet = new ParticlePacket(
+                    particle,
+                    false,
+                    x, y, z,
+                    0f, 0f, 0f,
+                    0f,
+                    1
+            );
+
             Task particleTask = scheduler.scheduleTask(() -> {
-                instance.sendGroupedPacket(new ParticlePacket(
-                        particle,
-                        false,
-                        x, y, z,
-                        0f, 0f, 0f,
-                        0f,
-                        1
-                ));
+                instance.sendGroupedPacket(packet);
             }, TaskSchedule.tick(1), TaskSchedule.tick(1)); // Repeat every tick
 
             particleTasks.add(particleTask);
@@ -66,18 +67,17 @@ public class ParticleGenerator {
 
             Scheduler scheduler = MinecraftServer.getSchedulerManager();
 
-            Task particleTask = scheduler.scheduleTask(() -> {
-                players.forEach((key, value) -> {
-                    value.sendGroupedPacket(new ParticlePacket(
-                            key,
-                            false,
-                            x, y, z,
-                            0f, 0f, 0f,
-                            0f,
-                            1
-                    ));
-                });
-            }, TaskSchedule.tick(1), TaskSchedule.tick(1)); // Repeat every tick
+            Task particleTask = scheduler.scheduleTask(() -> players.forEach((key, value) -> {
+                ParticlePacket packet = new ParticlePacket(
+                        key,
+                        false,
+                        x, y, z,
+                        0f, 0f, 0f,
+                        0f,
+                        1
+                );
+                value.sendGroupedPacket(packet);
+            }), TaskSchedule.tick(1), TaskSchedule.tick(1)); // Repeat every tick
 
             particleTasks.add(particleTask);
 

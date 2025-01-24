@@ -8,6 +8,7 @@ import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
@@ -24,6 +25,7 @@ import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import net.minestom.server.item.Material;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +33,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static io.jadiefication.Nimoh.executorService;
+import static io.jadiefication.Nimoh.game;
 
 public abstract class EventFunction implements PlayerDataHandler {
 
@@ -153,10 +156,22 @@ public abstract class EventFunction implements PlayerDataHandler {
         }
     }
 
+    public static void onInventoryOpen(InventoryOpenEvent event) {
+        if (event.getInventory() instanceof DebugGui inventory) {
+            DebugGui.j.set(0);
+            if (BallHandler.BallState.tasks != null && !BallHandler.BallState.tasks.isEmpty()) {
+                BallHandler.BallState.tasks.forEach(tasks -> tasks.forEach(ignored -> DebugGui.j.getAndIncrement()));
+                inventory.setItemStack(14, ItemStack.builder(Material.DEBUG_STICK)
+                        .customName(Component.text(DebugGui.j.get() + " Particle Tasks"))
+                        .build());
+            }
+        }
+    }
+
     public static void onBallHit(EntityAttackEvent event) {
         Entity player = event.getEntity();
         if (event.getTarget().equals(BladeBall.entity)) {
-            BladeBall.hasPlayer = false;
+            game.setPlayerAttached(false);
             BallHandler.BallState.firstTarget = false;
             BallHandler.BallState.playerWhomHitTheBall = (net.minestom.server.entity.Player) player;
         }

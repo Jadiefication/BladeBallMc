@@ -29,6 +29,7 @@ public class DebugGui extends Inventory {
     // Store tasks and BossBars per player
     private static final Map<UUID, Task> activeTasks = new HashMap<>();
     private static final Map<UUID, BossBar> activeBossBars = new HashMap<>();
+    public static final AtomicInteger j = new AtomicInteger();
 
     public static ItemStack createPerformanceCheckerItem() {
         return CustomItem.registerItem(
@@ -88,10 +89,6 @@ public class DebugGui extends Inventory {
         for (int i = 0; i < items.size(); i++) {
             setItemStack(i + 10, ItemStack.of(items.get(i)));
         }
-        AtomicInteger j = new AtomicInteger();
-        BallHandler.BallState.tasks.forEach(tasks -> tasks.forEach(ignored -> j.getAndIncrement()));
-        setItemStack(14, ItemStack.builder(Material.DEBUG_STICK)
-                .customName(Component.text(j.get() + " Particle Tasks"))
-                .build());
+
     }
 }

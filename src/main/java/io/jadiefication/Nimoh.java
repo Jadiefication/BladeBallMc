@@ -57,15 +57,6 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
 
         server.start("0.0.0.0", scanner.nextInt());
         game = new BladeBall();
-
-        new Thread(() -> {
-            while (true) {
-                if (scanner.next().equalsIgnoreCase("stop")) {
-                    MinecraftServer.stopCleanly();
-                    break;
-                }
-            }
-        }).start();
     }
 
     private static void loadWorld(AnvilLoader anvilLoader) {
@@ -79,14 +70,17 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
         instanceContainer.setChunkSupplier(LightingChunk::new);
     }
 
-    public static void startBladeBall(BladeBall game) {
-        // Start the game
+    public static void startBladeBall() {
+        if (updateTask != null) {
+            updateTask.cancel(); // Cancel previous task if active
+        }
+
         game.start(instanceContainer);
 
-        // Schedule the update task after the game has started
         updateTask = scheduler.scheduleTask(() -> {
             game.update(instanceContainer);
             return TaskSchedule.tick(1);
         }, TaskSchedule.tick(1));
     }
+
 }

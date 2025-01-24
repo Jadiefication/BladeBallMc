@@ -1,5 +1,6 @@
 package io.jadiefication.core.ball;
 
+import io.jadiefication.Nimoh;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -53,82 +54,84 @@ public sealed interface BallHandler extends Handler permits BladeBall {
         double height = 1.8;
 
         Player blockingPlayer = BallState.playerWhomHitTheBall;
-        Vec start = blockingPlayer.getPosition().asVec();
-        Vec directionVec = blockingPlayer.getPosition().direction();
+        if (blockingPlayer != null) {
+            Vec start = blockingPlayer.getPosition().asVec();
+            Vec directionVec = blockingPlayer.getPosition().direction();
 
-        Player closestPlayer = null;
-        double closestDistance = Double.MAX_VALUE;
-        boolean foundPlayerInRay = false;
+            Player closestPlayer = null;
+            double closestDistance = Double.MAX_VALUE;
+            boolean foundPlayerInRay = false;
 
-        for (Player player : container.getPlayers()) {
-            if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR)) continue;
-
-            // Calculate player AABB (similar to before)
-            Pos playerPos = player.getPosition();
-            Vec playerMin = new Vec(playerPos.x() - width / 2, playerPos.y(), playerPos.z() - width / 2);
-            Vec playerMax = new Vec(playerPos.x() + width / 2, playerPos.y() + height, playerPos.z() + width / 2);
-
-            // Ray-AABB intersection
-            double tMinX = (playerMin.x() - start.x()) / directionVec.x();
-            double tMaxX = (playerMax.x() - start.x()) / directionVec.x();
-            if (directionVec.x() < 0) {
-                double temp = tMinX;
-                tMinX = tMaxX;
-                tMaxX = temp;
-            }
-
-            double tMinY = (playerMin.y() - start.y()) / directionVec.y();
-            double tMaxY = (playerMax.y() - start.y()) / directionVec.y();
-            if (directionVec.y() < 0) {
-                double temp = tMinY;
-                tMinY = tMaxY;
-                tMaxY = temp;
-            }
-
-            double tMinZ = (playerMin.z() - start.z()) / directionVec.z();
-            double tMaxZ = (playerMax.z() - start.z()) / directionVec.z();
-            if (directionVec.z() < 0) {
-                double temp = tMinZ;
-                tMinZ = tMaxZ;
-                tMaxZ = temp;
-            }
-
-            double tMin = Math.max(tMinX, Math.max(tMinY, tMinZ));
-            double tMax = Math.min(tMaxX, Math.min(tMaxY, tMaxZ));
-
-            if (tMin <= tMax && tMax > 0) {
-                foundPlayerInRay = true;
-                double distance = start.distance(playerPos.asVec());
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestPlayer = player;
-
-                }
-            }
-        }
-
-        if (!foundPlayerInRay) {
             for (Player player : container.getPlayers()) {
                 if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR)) continue;
 
-                Vec playerPos = player.getPosition().asVec();
+                // Calculate player AABB (similar to before)
+                Pos playerPos = player.getPosition();
+                Vec playerMin = new Vec(playerPos.x() - width / 2, playerPos.y(), playerPos.z() - width / 2);
+                Vec playerMax = new Vec(playerPos.x() + width / 2, playerPos.y() + height, playerPos.z() + width / 2);
 
-                // Calculate distance from player to the ray
-                Vec playerToRayStart = playerPos.sub(start);
-                Vec projection = directionVec.mul(playerToRayStart.dot(directionVec));
-                Vec closestPointOnRay = start.add(projection);
-                double distanceToRay = playerPos.distance(closestPointOnRay);
+                // Ray-AABB intersection
+                double tMinX = (playerMin.x() - start.x()) / directionVec.x();
+                double tMaxX = (playerMax.x() - start.x()) / directionVec.x();
+                if (directionVec.x() < 0) {
+                    double temp = tMinX;
+                    tMinX = tMaxX;
+                    tMaxX = temp;
+                }
 
-                if (distanceToRay < closestDistance) {
-                    closestDistance = distanceToRay;
-                    closestPlayer = player;
+                double tMinY = (playerMin.y() - start.y()) / directionVec.y();
+                double tMaxY = (playerMax.y() - start.y()) / directionVec.y();
+                if (directionVec.y() < 0) {
+                    double temp = tMinY;
+                    tMinY = tMaxY;
+                    tMaxY = temp;
+                }
+
+                double tMinZ = (playerMin.z() - start.z()) / directionVec.z();
+                double tMaxZ = (playerMax.z() - start.z()) / directionVec.z();
+                if (directionVec.z() < 0) {
+                    double temp = tMinZ;
+                    tMinZ = tMaxZ;
+                    tMaxZ = temp;
+                }
+
+                double tMin = Math.max(tMinX, Math.max(tMinY, tMinZ));
+                double tMax = Math.min(tMaxX, Math.min(tMaxY, tMaxZ));
+
+                if (tMin <= tMax && tMax > 0) {
+                    foundPlayerInRay = true;
+                    double distance = start.distance(playerPos.asVec());
+                    if (distance < closestDistance) {
+                        closestDistance = distance;
+                        closestPlayer = player;
+
+                    }
                 }
             }
+
+            if (!foundPlayerInRay) {
+                for (Player player : container.getPlayers()) {
+                    if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR)) continue;
+
+                    Vec playerPos = player.getPosition().asVec();
+
+                    // Calculate distance from player to the ray
+                    Vec playerToRayStart = playerPos.sub(start);
+                    Vec projection = directionVec.mul(playerToRayStart.dot(directionVec));
+                    Vec closestPointOnRay = start.add(projection);
+                    double distanceToRay = playerPos.distance(closestPointOnRay);
+
+                    if (distanceToRay < closestDistance) {
+                        closestDistance = distanceToRay;
+                        closestPlayer = player;
+                    }
+                }
+            }
+
+            Nimoh.game.setPlayerAttached(true);
+            return closestPlayer;
         }
-
-        BladeBall.hasPlayer = true;
-        return closestPlayer;
-
+        return null;
     }
 
     void update(InstanceContainer container);
