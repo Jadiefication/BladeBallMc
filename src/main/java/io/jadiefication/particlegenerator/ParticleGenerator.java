@@ -1,5 +1,6 @@
 package io.jadiefication.particlegenerator;
 
+import io.jadiefication.Nimoh;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -17,57 +18,20 @@ import java.util.Map;
 
 public class ParticleGenerator {
 
-    private static List<Task> sendPackets(Instance instance, Vec start, Vec end, Particle particle, double duration) {
+    private static final Scheduler scheduler = Nimoh.scheduler;
+
+    private static void sendPacketsToSpecificPlayers(Vec start, Vec end, Map<Particle, Team> players) {
         int particles = 20;
-        List<Task> particleTasks = new ArrayList<>();
+        ParticlePacket[] particleNormalPackets = new ParticlePacket[particles];
+        ParticlePacket[] particleOrangePackets = new ParticlePacket[particles];
         for (int j = 0; j < particles; j++) {
             double progress = (double) j / particles;
             double x = start.x() + (end.x() - start.x()) * progress;
             double z = start.z() + (end.z() - start.z()) * progress;
             double y = start.y();
 
-            Scheduler scheduler = MinecraftServer.getSchedulerManager();
-
-            ParticlePacket packet = new ParticlePacket(
-                    particle,
-                    false,
-                    x, y, z,
-                    0f, 0f, 0f,
-                    0f,
-                    1
-            );
-
-            Task particleTask = scheduler.scheduleTask(() -> {
-                instance.sendGroupedPacket(packet);
-            }, TaskSchedule.tick(1), TaskSchedule.tick(1)); // Repeat every tick
-
-            particleTasks.add(particleTask);
-
-            if (!Double.isInfinite(duration)) {
-                // Schedule task cancellation
-                scheduler.scheduleTask(() -> {
-                    particleTask.cancel();
-                    return TaskSchedule.nextTick();
-                }, TaskSchedule.seconds((long) duration));
-            }
-
-        }
-
-        return particleTasks;
-    }
-
-    private static List<Task> sendPacketsToSpecificPlayers(Vec start, Vec end, Map<Particle, Team> players, double duration) {
-        int particles = 20;
-        List<Task> particleTasks = new ArrayList<>();
-        for (int j = 0; j < particles; j++) {
-            double progress = (double) j / particles;
-            double x = start.x() + (end.x() - start.x()) * progress;
-            double z = start.z() + (end.z() - start.z()) * progress;
-            double y = start.y();
-
-            Scheduler scheduler = MinecraftServer.getSchedulerManager();
-
-            Task particleTask = scheduler.scheduleTask(() -> players.forEach((key, value) -> {
+            int finalJ = j;
+            players.forEach((key, value) -> {
                 ParticlePacket packet = new ParticlePacket(
                         key,
                         false,
@@ -76,25 +40,55 @@ public class ParticleGenerator {
                         0f,
                         1
                 );
-                value.sendGroupedPacket(packet);
-            }), TaskSchedule.tick(1), TaskSchedule.tick(1)); // Repeat every tick
-
-            particleTasks.add(particleTask);
-
-            if (!Double.isInfinite(duration)) {
-                // Schedule task cancellation
-                scheduler.scheduleTask(() -> {
-                    particleTask.cancel();
-                    return TaskSchedule.nextTick();
-                }, TaskSchedule.seconds((long) duration));
-            }
+                if (key.equals(Particle.WAX_ON)) {
+                    particleNormalPackets[finalJ] = packet;
+                } else {
+                    particleOrangePackets[finalJ] = packet;
+                }
+            });
 
         }
 
-        return particleTasks;
+        players.forEach((key, value) -> {
+            if (key.equals(Particle.WAX_ON)) {
+                value.getPlayers().forEach(player ->
+                        player.sendPackets(particleNormalPackets)
+                );
+            } else {
+                value.getPlayers().forEach(player ->
+                        player.sendPackets(particleOrangePackets)
+                );
+            }
+        });
     }
 
-    public static List<List<Task>> spawnOctagonParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+    private static void sendPackets(Instance instance, Vec start, Vec end, Particle particle) {
+        int particles = 20;
+        //List<Task> particleTasks = new ArrayList<>();
+        ParticlePacket[] particlePackets = new ParticlePacket[particles];
+        for (int j = 0; j < particles; j++) {
+            double progress = (double) j / particles;
+            double x = start.x() + (end.x() - start.x()) * progress;
+            double z = start.z() + (end.z() - start.z()) * progress;
+            double y = start.y();
+
+            particlePackets[j] = new ParticlePacket(
+                    particle,
+                    false,
+                    x, y, z,
+                    0f, 0f, 0f,
+                    0f,
+                    1
+            );
+
+        }
+
+        instance.getPlayers().forEach(
+                player -> player.sendPackets(particlePackets)
+        );
+    }
+
+    public static Task spawnOctagonParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
         // Calculate the 8 points of the octagon
         Vec[] points = new Vec[8];
 
@@ -106,20 +100,28 @@ public class ParticleGenerator {
             points[i] = new Vec(x, center.y(), z);
         }
 
-        List<List<Task>> tasks = new ArrayList<>();
-
         // Connect the 8 points with particles
-        for (int i = 0; i < 8; i++) {
-            Vec start = points[i];
-            Vec end = points[(i + 1) % 8];
+        Task particleTask = scheduler.scheduleTask(() -> {
+            for (int i = 0; i < 8; i++) {
+                Vec start = points[i];
+                Vec end = points[(i + 1) % 8];
 
-            tasks.add(sendPackets(instance, start, end, particle, duration));
+                sendPackets(instance, start, end, particle);
+            }
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
+
+        if (!Double.isInfinite(duration)) {
+            // Schedule task cancellation
+            scheduler.scheduleTask(() -> {
+                particleTask.cancel();
+                return TaskSchedule.nextTick();
+            }, TaskSchedule.seconds((long) duration));
         }
 
-        return tasks;
+        return particleTask;
     }
 
-    public static List<List<Task>> spawnCircleParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+    public static Task spawnCircleParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
         Vec[] points = new Vec[32];
 
         for (int i = 0; i < 32; i++) {
@@ -129,21 +131,29 @@ public class ParticleGenerator {
             points[i] = new Vec(x, center.y(), z);
         }
 
-        List<List<Task>> tasks = new ArrayList<>();
-
         // Connect the 8 points with particles
-        for (int i = 0; i < 32; i++) {
-            Vec start = points[i];
-            Vec end = points[(i + 1) % 32];
+        Task particleTask = scheduler.scheduleTask(() -> {
+            for (int i = 0; i < 32; i++) {
+                Vec start = points[i];
+                Vec end = points[(i + 1) % 32];
 
-            tasks.add(sendPackets(instance, start, end, particle, duration));
+                sendPackets(instance, start, end, particle);
+            }
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
+
+        if (!Double.isInfinite(duration)) {
+            // Schedule task cancellation
+            scheduler.scheduleTask(() -> {
+                particleTask.cancel();
+                return TaskSchedule.nextTick();
+            }, TaskSchedule.seconds((long) duration));
         }
 
-        return tasks;
+        return particleTask;
     }
 
 
-    public static List<List<Task>> spawnSquareParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+    public static Task spawnSquareParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
         Vec[] points = new Vec[4];
 
         for (int i = 0; i < 4; i++) {
@@ -155,31 +165,47 @@ public class ParticleGenerator {
             points[i] = new Vec(x, center.y(), z);
         }
 
-        List<List<Task>> tasks = new ArrayList<>();
+        Task particleTask = scheduler.scheduleTask(() -> {
+            for (int i = 0; i < 4; i++) {
+                Vec start = points[i];
+                Vec end = points[(i + 1) % 4];
 
-        for (int i = 0; i < 4; i++) {
-            Vec start = points[i];
-            Vec end = points[(i+1) % 4];
+                sendPackets(instance, start, end, particle);
+            }
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 
-            tasks.add(sendPackets(instance, start, end, particle, duration));
+        if (!Double.isInfinite(duration)) {
+            // Schedule task cancellation
+            scheduler.scheduleTask(() -> {
+                particleTask.cancel();
+                return TaskSchedule.nextTick();
+            }, TaskSchedule.seconds((long) duration));
         }
 
-        return tasks;
+        return particleTask;
     }
 
-    public static List<List<Task>> spawnSphereParticles(Instance instance, Pos center, double radiusX, double radiusY, double radiusZ, Particle particle, double duration) {
+    public static Task spawnSphereParticles(Instance instance, Pos center, double radiusX, double radiusY, double radiusZ, Particle particle, double duration) {
         double phi = Math.PI * (3 - Math.sqrt(5));
         int points = 200; // Adjust for desired density
 
-        List<List<Task>> tasks = new ArrayList<>();
+        Task particleTask = scheduler.scheduleTask(() -> {
+            for (int i = 0; i < points; i++) {
+                Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
 
-        for (int i = 0; i < points; i++) {
-            Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
+                sendPackets(instance, vectors.getKey(), vectors.getValue(), particle);
+            }
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 
-            tasks.add(sendPackets(instance, vectors.getKey(), vectors.getValue(), particle, duration));
+        if (!Double.isInfinite(duration)) {
+            // Schedule task cancellation
+            scheduler.scheduleTask(() -> {
+                particleTask.cancel();
+                return TaskSchedule.nextTick();
+            }, TaskSchedule.seconds((long) duration));
         }
 
-        return tasks;
+        return particleTask;
     }
 
     private static Map.Entry<Vec, Vec> calculateSpehre(Pos center, double radiusX, double radiusY, double radiusZ, int i, double phi) {
@@ -209,18 +235,26 @@ public class ParticleGenerator {
         return Map.entry(start, end);
     }
 
-    public static List<List<Task>> spawnSphereParticles(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, Team> players, double duration) {
+    public static Task spawnSphereParticles(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, Team> players, double duration) {
         double phi = Math.PI * (3 - Math.sqrt(5));
         int points = 200; // Adjust for desired density
 
-        List<List<Task>> tasks = new ArrayList<>();
+        Task particleTask = scheduler.scheduleTask(() -> {
+            for (int i = 0; i < points; i++) {
+                Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
 
-        for (int i = 0; i < points; i++) {
-            Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
+                sendPacketsToSpecificPlayers(vectors.getKey(), vectors.getValue(), players);
+            }
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 
-            tasks.add(sendPacketsToSpecificPlayers(vectors.getKey(), vectors.getValue(), players, duration));
+        if (!Double.isInfinite(duration)) {
+            // Schedule task cancellation
+            scheduler.scheduleTask(() -> {
+                particleTask.cancel();
+                return TaskSchedule.nextTick();
+            }, TaskSchedule.seconds((long) duration));
         }
 
-        return tasks;
+        return particleTask;
     }
 }

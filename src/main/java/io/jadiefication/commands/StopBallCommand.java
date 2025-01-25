@@ -16,11 +16,11 @@ public class StopBallCommand extends Command {
             try {
                 PermissionablePlayer player = (PermissionablePlayer) sender;
                 if (player.hasPermission(Permission.START)) {
-                    BallHandler.BallState.tasks.forEach( tasks -> tasks.forEach(Task::cancel));
+                    BallHandler.BallState.task.cancel();
                     Nimoh.updateTask.cancel();
                 }
             } catch (ClassCastException e) {
-                BallHandler.BallState.tasks.forEach( tasks -> tasks.forEach(Task::cancel));
+                BallHandler.BallState.task.cancel();
                 Nimoh.updateTask.cancel();
             }
         });

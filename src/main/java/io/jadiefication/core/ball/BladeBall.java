@@ -2,12 +2,14 @@ package io.jadiefication.core.ball;
 
 import io.jadiefication.core.ball.entity.BallEntity;
 import io.jadiefication.particlegenerator.ParticleGenerator;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.potion.Potion;
 import net.minestom.server.potion.PotionEffect;
@@ -16,25 +18,37 @@ import net.minestom.server.scoreboard.TeamBuilder;
 import net.minestom.server.scoreboard.TeamManager;
 import net.minestom.server.timer.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 
 /**
  * Scheduler... FUCK YOU
  *
+ * @Author Jade
  */
 public non-sealed class BladeBall implements BallHandler {
 
+    private static final double MAX_SPEED = 10.0;
     public static BallEntity entity;
-    private static Player homedUponPlayer;
+    private static volatile Player homedUponPlayer;
     public boolean hasPlayer = false;
     private int hitWall;
     private static final Object ballPositionLock = new Object();
     private static final Object homedPlayerLock = new Object();
     private static final Object tasksLock = new Object();
+    private static final Object teamLock = new Object();
+    private static final TeamManager manager = new TeamManager();
+    private static final Team target = new TeamBuilder("target", manager)
+            .teamColor(NamedTextColor.RED)
+            .build();
+    private static final Team other = new TeamBuilder("other", manager)
+            .teamColor(NamedTextColor.WHITE)
+            .collisionRule(TeamsPacket.CollisionRule.ALWAYS)
+            .build();
+    private static double speedPerBlocks = 0.5;
 
     @Override
     public void update(InstanceContainer container) {
@@ -55,95 +69,47 @@ public non-sealed class BladeBall implements BallHandler {
                 e.printStackTrace();
                 return null;
             });
-            /*homedUponPlayer = BallState.firstTarget ? BallState.findFirstTarget(container) : findTarget(container);
-            BallState.firstTarget = false;
-            hasPlayer = true;*/
         } else {
             handleHomingLogic(container);
         }
-
-        /*if (homedUponPlayer != null) {
-            try {
-                CompletableFuture.supplyAsync(() -> getMovementVec(homedUponPlayer)).thenAccept(result -> {
-                    boolean shouldBounce;
-                    Vec updatedPosition;
-                    Vec bounceResult = result;
-
-                    synchronized (ballPositionLock) {
-                        // Perform only minimal state updates inside the synchronized block
-                        if (container.getBlock(BallState.ballPosition) != Block.AIR && hitWall != 60) {
-                            BallState.ballPosition = BallState.ballPosition.sub(result.mul(0.2)); // Move back slightly
-                            bounceResult = result.mul(-0.8); // Calculate bounce vector
-                            hitWall++;
-                            shouldBounce = true; // Use this flag outside the block
-                        } else {
-                            shouldBounce = false;
-                        }
-                        updatedPosition = Vec.fromPoint(BallState.ballPosition); // Cache the position safely
-                    }
-
-                    if (shouldBounce) {
-                        doHoming(bounceResult, container); // Handle bouncing
-                    } else {
-                        doHoming(result, container); // Normal homing logic
-                    }
-                }).exceptionally(e -> {
-                    e.printStackTrace();
-                    return null;
-                });
-                Vec movementVec = getMovementVec(homedUponPlayer);
-                if (!BallState.tasks.isEmpty()) {
-                    if (container.getBlock(BallState.ballPosition) != Block.AIR) {
-                        if (hitWall != 60) {
-                            // Ball hit a wall, apply bounce-back effect
-                            BallState.ballPosition = BallState.ballPosition.sub(movementVec.mul(0.2)); // Move back slightly
-
-                            // Invert the movement vector for a bounce effect
-                            movementVec = movementVec.mul(-0.8); // Adjust bounce strength
-                            hitWall++;
-                        }
-                    }
-                    doHoming(movementVec, container);
-                }
-                if (BallState.ballPosition.distanceSquared(homedUponPlayer.getPosition()) < 0.25) {
-                    homedUponPlayer.setGameMode(GameMode.SPECTATOR);
-                    ParticleGenerator.spawnCircleParticles(container, homedUponPlayer.getPosition(), 0.5, 0.5, Particle.ITEM_SNOWBALL, 1);
-                    homedUponPlayer = null;
-                    BallState.tasks.forEach(tasks -> {
-                        tasks.forEach(Task::cancel);
-                        tasks.clear();
-                    });
-                    BallState.tasks.clear();
-                    entity.remove();
-                    start(container);
-                }
-            } catch (NullPointerException ignored) {
-
-            }
-        }*/
     }
 
     private static void doHoming(Vec movementVec, InstanceContainer container) {
+        List<String> playerNames = new ArrayList<>();
+        List<Player> players = new ArrayList<>(container.getPlayers().stream().toList());
+        players.remove(homedUponPlayer);
+        String homedUsername;
+
+        synchronized (homedPlayerLock) {
+            homedUsername = homedUponPlayer.getUsername();
+        }
+
+        players.forEach(player -> playerNames.add(player.getUsername()));
+        synchronized (teamLock) {
+            target.addMember(homedUsername);
+            other.addMembers(playerNames);
+        }
+
         synchronized (ballPositionLock) {
             BallState.ballPosition = BallState.ballPosition.add(movementVec);
         }
         entity.teleport(BallState.ballPosition);
         // Always create new particle tasks after movement
-        List<Player> players = new java.util.ArrayList<>(container.getPlayers().stream().toList());
-        players.remove(homedUponPlayer);
 
         synchronized (tasksLock) {
             // Clear existing tasks
-            BallState.tasks.forEach(tasks -> {
-                tasks.forEach(Task::cancel);
-                tasks.clear();
-            });
-            BallState.tasks.clear();
-            BallState.tasks = ParticleGenerator.spawnSphereParticles(
+            BallState.task.cancel();
+            /*BallState.task = ParticleGenerator.spawnSphereParticles(
                     container,
                     BallState.ballPosition,
                     0.5, 0.5, 0.5,
                     players.isEmpty() ? Particle.WAX_ON : Particle.WAX_OFF,
+                    1.0
+            );*/
+            BallState.task = ParticleGenerator.spawnSphereParticles(
+                    BallState.ballPosition,
+                    0.5, 0.5, 0.5,
+                    Map.of(Particle.WAX_ON, target, Particle.WAX_OFF, other),
                     1.0
             );
         }
@@ -156,8 +122,6 @@ public non-sealed class BladeBall implements BallHandler {
                 synchronized (player) {
                     Vec directionVec = Vec.fromPoint(player.getPosition().sub(BallState.ballPosition));
                     Vec normalizedVec = directionVec.normalize();
-                    double speedPerBlocks = 0.5;
-
                     return normalizedVec.mul(speedPerBlocks);
                 }
             }).get();
@@ -169,18 +133,20 @@ public non-sealed class BladeBall implements BallHandler {
 
     @Override
     public void start(InstanceContainer container) {
+        container.getPlayers().forEach(player -> {
+            player.addEffect(new Potion(PotionEffect.GLOWING, 1, Integer.MAX_VALUE));
+            if (homedUponPlayer != null && player != homedUponPlayer) other.removeMember(player.getUsername());
+            else if (player == homedUponPlayer) target.removeMember(player.getUsername());
+        });
+
         BallState.stayingStill = true;
         BallState.ballPosition = new Pos(0.5, 45.0, 0.5);
         hasPlayer = false;
-        if (BallState.tasks != null && !BallState.tasks.isEmpty()) {
-            BallState.tasks.forEach(tasks -> {
-                tasks.forEach(Task::cancel);
-                tasks.clear();
-            });
-            BallState.tasks.clear();
+        if (BallState.task != null) {
+            BallState.task.cancel();
         }
 
-        BallState.tasks = ParticleGenerator.spawnSphereParticles(container, BallState.ballPosition, 0.5, 0.5, 0.5, Particle.WAX_OFF, Double.POSITIVE_INFINITY);
+        BallState.task = ParticleGenerator.spawnSphereParticles(container, BallState.ballPosition, 0.5, 0.5, 0.5, Particle.WAX_OFF, Double.POSITIVE_INFINITY);
 
         if (entity != null) {
             entity.remove(); // Remove the old ball entity
@@ -214,11 +180,7 @@ public non-sealed class BladeBall implements BallHandler {
 
         // Cancel all related tasks
         synchronized (tasksLock) {
-            BallState.tasks.forEach(taskGroup -> {
-                taskGroup.forEach(Task::cancel);
-                taskGroup.clear();
-            });
-            BallState.tasks.clear();
+            BallState.task.cancel();
         }
 
         entity.remove(); // Remove ball entity
@@ -244,18 +206,6 @@ public non-sealed class BladeBall implements BallHandler {
                 shouldBounce = false;
             }
 
-            // Synchronize on ball position lock
-            /*synchronized (ballPositionLock) {
-                if (container.getBlock(BallState.ballPosition) != Block.AIR && hitWall < 60) {
-                    BallState.ballPosition = BallState.ballPosition.sub(movementVec.mul(0.2)); // Adjust ball backward
-                    bounceVec = movementVec.mul(-0.8); // Calculate bounce-back vector
-                    hitWall++; // Increment wall hit counter
-                    shouldBounce = true;
-                } else {
-                    shouldBounce = false;
-                }
-            }*/
-
             // Perform homing movement
 
             if (shouldBounce) {
@@ -268,7 +218,16 @@ public non-sealed class BladeBall implements BallHandler {
             if (BallState.ballPosition.distanceSquared(homedUponPlayer.getPosition()) < 0.25) {
                 handleCollision(container, homedUponPlayer);
             }
+        } else hasPlayer = false;
+
+    }
+
+    public void multipleSpeed(double multiplier) {
+        speedPerBlocks = speedPerBlocks + speedPerBlocks * multiplier;
+        if (speedPerBlocks > MAX_SPEED) {
+            speedPerBlocks = MAX_SPEED;
         }
+
     }
 
 }

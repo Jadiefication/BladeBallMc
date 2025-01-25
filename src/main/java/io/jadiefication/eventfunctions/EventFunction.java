@@ -29,8 +29,6 @@ import net.minestom.server.item.Material;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static io.jadiefication.Nimoh.executorService;
 import static io.jadiefication.Nimoh.game;
@@ -159,8 +157,8 @@ public abstract class EventFunction implements PlayerDataHandler {
     public static void onInventoryOpen(InventoryOpenEvent event) {
         if (event.getInventory() instanceof DebugGui inventory) {
             DebugGui.j.set(0);
-            if (BallHandler.BallState.tasks != null && !BallHandler.BallState.tasks.isEmpty()) {
-                BallHandler.BallState.tasks.forEach(tasks -> tasks.forEach(ignored -> DebugGui.j.getAndIncrement()));
+            if (BallHandler.BallState.task != null) {
+                DebugGui.j.getAndIncrement();
                 inventory.setItemStack(14, ItemStack.builder(Material.DEBUG_STICK)
                         .customName(Component.text(DebugGui.j.get() + " Particle Tasks"))
                         .build());
@@ -174,6 +172,7 @@ public abstract class EventFunction implements PlayerDataHandler {
             game.setPlayerAttached(false);
             BallHandler.BallState.firstTarget = false;
             BallHandler.BallState.playerWhomHitTheBall = (net.minestom.server.entity.Player) player;
+            game.multipleSpeed(0.1);
         }
     }
 }

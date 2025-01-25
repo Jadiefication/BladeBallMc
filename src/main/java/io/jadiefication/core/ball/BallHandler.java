@@ -27,7 +27,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
 
     static void restart(InstanceContainer container) {
 
-        BallState.tasks.forEach(tasks -> tasks.forEach(Task::cancel));
+        BallState.task.cancel();
         BallState.isActive = false;
 
         Scheduler scheduler = MinecraftServer.getSchedulerManager();
@@ -37,7 +37,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
                 // Stop spawning particles when no longer staying still
                 return TaskSchedule.stop();
             }
-            BallState.tasks = ParticleGenerator.spawnSphereParticles(container, BallState.ballPosition, 0.5, 0.5, 0.5, Particle.WAX_OFF, 1);
+            BallState.task = ParticleGenerator.spawnSphereParticles(container, BallState.ballPosition, 0.5, 0.5, 0.5, Particle.WAX_OFF, 1);
             return TaskSchedule.tick(1);
         }, TaskSchedule.tick(1));
 
@@ -140,7 +140,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
         public static Player playerWhomHitTheBall = null;
         public static boolean isActive = false;
         public static boolean stayingStill = true;
-        public static List<List<Task>> tasks;
+        public static Task task;
         public static Pos ballPosition = new Pos(0.5, 45.0, 0.5);
         public static int dt;
         public final static Task dtCounter = MinecraftServer.getSchedulerManager().scheduleTask(() -> {
