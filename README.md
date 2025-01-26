@@ -32,7 +32,7 @@ BladeBallMC will be built on the **Minestom** framework, ensuring high performan
 ## 📜 Roadmap
 
 1. 📝 **Initial Concept and Planning** ✅
-2. 🔧 **Core Gameplay Mechanics** (Testing) 🔧
+2. 🔧 **Core Gameplay Mechanics** ✅
 3. 🛠️ **Custom Abilities and Items** (Planned) 🛠️
 4. 🎨 **Arena Design** (Planned) 🎨
 5. 🧪 **Beta Testing** (Planned) 🧪
