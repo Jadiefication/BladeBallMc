@@ -1,7 +1,11 @@
 package io.jadiefication;
 
+import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
 import io.jadiefication.customitem.CustomItem;
+import io.jadiefication.particlegenerator.ParticleGenerator;
+import io.jadiefication.permission.PermissionHandler;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -17,17 +21,21 @@ import net.minestom.server.instance.anvil.AnvilLoader;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.network.packet.server.play.TeamsPacket;
+import net.minestom.server.particle.Particle;
+import net.minestom.server.scoreboard.Team;
+import net.minestom.server.scoreboard.TeamBuilder;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
-import io.jadiefication.core.ball.BladeBall;
-import io.jadiefication.permission.PermissionHandler;
-import io.jadiefication.permission.PermissionablePlayer;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -45,32 +53,40 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
             Material.BLACK_STAINED_GLASS_PANE, 1, event -> {
                 PlayerUseItemEvent e = (PlayerUseItemEvent) event;
         final Player player = e.getPlayer();
-        AtomicReference<Pos> pos = new AtomicReference<>(player.getPosition());
-        Vec direction = pos.get().direction();
+        Pos pos = player.getPosition();
+        Vec direction = pos.direction().normalize();
+        Vec movement = direction.mul(4);
 
-        Vec movement = direction.mul(3);
-        AtomicReference<Double> steps = new AtomicReference<>((double) 20);
-        Vec step = movement.div(steps.get());
-        AtomicReference<Task> taskReference = new AtomicReference<>();
-        Task task = scheduler.scheduleTask(() -> {
-            Pos newPos = pos.get().add(step);
-            pos.set(newPos);
-            player.teleport(new Pos(newPos.x(), pos.get().y(), newPos.z()));
+        Task task = ParticleGenerator.spawnSphereParticles(new Pos(pos.x(), pos.y() + 2, pos.z()),
+                0.5, 0.5, 0.5, Map.of(Particle.WAX_OFF, List.of(player)), 1);
 
-            if (steps.get() <= 1) {
-                // Cancel the task
-                Task runningTask = taskReference.get();
-                if (runningTask != null) {
-                    runningTask.cancel(); // Stop the task
-                }
-                return;
-            }
+        Pos addedPos = pos.add(movement);
+        addedPos = collisionDetection(addedPos, player);
 
+        Pos finalAddedPos = addedPos;
+        scheduler.scheduleTask(() -> {
+            // Teleport the player after the delay
+            player.teleport(finalAddedPos);
 
-            steps.getAndSet(steps.get() - 1);
-        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
-        taskReference.set(task);
+            // Cancel the particle task after teleporting (stop the effect)
+            task.cancel();
+
+        }, TaskSchedule.millis(150), TaskSchedule.stop());
+
     });
+
+    private static Pos collisionDetection(Pos pos, Player player) {
+        if (pos.y() < 43) {
+            pos = new Pos(pos.x(), 44, pos.z());
+        }
+        if (pos.y() > 54) {
+            return player.getPosition();
+        }
+        if (instanceContainer.getBlock(pos) != Block.AIR) {
+            return collisionDetection(pos.add(0, 1, 0), player);
+        }
+        return pos;
+    }
 
     public static void main(String[] args) {
         MinecraftServer server = MinecraftServer.init();

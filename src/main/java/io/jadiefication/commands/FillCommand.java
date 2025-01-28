@@ -1,12 +1,12 @@
 package io.jadiefication.commands;
 
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.instance.block.Block;
-import io.jadiefication.permission.PermissionablePlayer;
 
 public class FillCommand extends Command implements CommandLogic {
 

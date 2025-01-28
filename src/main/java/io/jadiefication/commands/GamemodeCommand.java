@@ -1,5 +1,7 @@
 package io.jadiefication.commands;
 
+import io.jadiefication.permission.Permission;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
@@ -9,8 +11,6 @@ import net.minestom.server.command.builder.arguments.ArgumentType;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.utils.entity.EntityFinder;
-import io.jadiefication.permission.Permission;
-import io.jadiefication.permission.PermissionablePlayer;
 
 public class GamemodeCommand extends Command implements CommandLogic {
 

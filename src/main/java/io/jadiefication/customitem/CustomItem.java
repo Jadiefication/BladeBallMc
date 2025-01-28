@@ -29,6 +29,7 @@ public abstract class CustomItem {
                     .build();
         }
         items.put(item, event);
+        new CustomItemHolder(item, name, lore, customModelData);
         return item;
     }
 
@@ -43,6 +44,7 @@ public abstract class CustomItem {
                     .withLore(lore);
         }
         items.put(newItem, event);
+        new CustomItemHolder(item, name, lore, customModelData);
         return newItem;
     }
 

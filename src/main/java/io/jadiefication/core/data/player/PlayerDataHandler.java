@@ -1,21 +1,19 @@
 package io.jadiefication.core.data.player;
 
 import io.jadiefication.core.Handler;
+import io.jadiefication.customitem.CustomItemHolder;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.kyori.adventure.nbt.ListBinaryTag;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.minestom.server.entity.Player;
-import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,11 +55,11 @@ public interface PlayerDataHandler extends Handler {
                         String customName = resultSet.getString("customname");
                         String customLore = resultSet.getString("customlore");
 
-                        List<net.kyori.adventure.text.Component> lore = new ArrayList<>();
+                        List<Component> lore = new ArrayList<>();
 
 
                         customLore.lines().forEach(line -> {
-                            lore.add(net.kyori.adventure.text.Component.text(line));
+                            lore.add(Component.text(line));
                         });
 
                         try {
@@ -70,7 +68,7 @@ public interface PlayerDataHandler extends Handler {
                                 item = ItemStack.builder(Objects.requireNonNull(Material.fromNamespaceId(itemId)))
                                         .customModelData(customModelData)
                                         .lore(lore)
-                                        .customName(net.kyori.adventure.text.Component.text(customName))
+                                        .customName(Component.text(customName))
                                         .build();
                             } else {
                                 item = ItemStack.builder(Objects.requireNonNull(Material.fromNamespaceId(itemId)))
@@ -167,28 +165,29 @@ public interface PlayerDataHandler extends Handler {
         preparedStatement.setString(1, uuid);
         preparedStatement.setInt(2, slot);
         preparedStatement.setString(3, item.material().name());
+        Optional<CustomItemHolder> customItemOptional = CustomItemHolder.hasItem(item);
 
-        CompoundBinaryTag nbt = item.toItemNBT();
+        String customName = item.material().name();
+        List<Component> lore;
+        AtomicReference<String> loreLine;
+        Integer customModelData = null;
 
-        String customName = nbt.getString("custom_name");
-        AtomicInteger i = new AtomicInteger();
-        ListBinaryTag list = nbt.getList("lore");
-        List<String> customLoreList = new ArrayList<>();
-        nbt.getList("Lore").forEach(value -> {
-            customLoreList.set(i.get(), list.getString(i.get()));
+        if (customItemOptional.isPresent()) {
+            CustomItemHolder customItem = customItemOptional.get();
+            customName = ((TextComponent) customItem.title()).content();
+            lore = customItem.lore();
+            loreLine = new AtomicReference<>("");
+            lore.forEach(line -> {
+                loreLine.getAndSet(loreLine.get() + ((TextComponent) line).content() + "\n");
+            });
+            customModelData = customItem.customModelData();
+        } else {
+            loreLine = new AtomicReference<>("");
+        }
 
-            i.getAndIncrement();
-        });
-        AtomicReference<String> customLore = new AtomicReference<>("");
-        customLoreList.forEach(value -> {
-            String s = customLore + value;
-            customLore.set(s);
-        });
-        int cmd = nbt.getInt("custom_model_data");
-
-        preparedStatement.setInt(4, cmd);
+        preparedStatement.setInt(4, customModelData);
         preparedStatement.setString(5, customName);
-        preparedStatement.setString(6, String.valueOf(customLoreList));
+        preparedStatement.setString(6, loreLine.get());
         preparedStatement.executeUpdate();
     }
 

@@ -1,11 +1,10 @@
 package io.jadiefication.commands;
 
-import net.minestom.server.command.builder.Command;
-import net.minestom.server.timer.Task;
 import io.jadiefication.Nimoh;
 import io.jadiefication.core.ball.BallHandler;
 import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import net.minestom.server.command.builder.Command;
 
 public class StopBallCommand extends Command {
 

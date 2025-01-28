@@ -1,9 +1,10 @@
 package io.jadiefication.particlegenerator;
 
 import io.jadiefication.Nimoh;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.EntityStatuses;
+import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
@@ -13,6 +14,7 @@ import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,45 +22,39 @@ public class ParticleGenerator {
 
     private static final Scheduler scheduler = Nimoh.scheduler;
 
-    private static void sendPacketsToSpecificPlayers(Vec start, Vec end, Map<Particle, Team> players) {
+    private static void sendPacketsToSpecificPlayers(Vec start, Vec end, Map<Particle, List<Player>> players) {
         int particles = 20;
-        ParticlePacket[] particleNormalPackets = new ParticlePacket[particles];
-        ParticlePacket[] particleOrangePackets = new ParticlePacket[particles];
+        Map<Particle, List<ParticlePacket>> particlePackets = new HashMap<>();
         for (int j = 0; j < particles; j++) {
             double progress = (double) j / particles;
             double x = start.x() + (end.x() - start.x()) * progress;
             double z = start.z() + (end.z() - start.z()) * progress;
             double y = start.y();
 
-            int finalJ = j;
-            players.forEach((key, value) -> {
+            for (Map.Entry<Particle, List<Player>> entry : players.entrySet()) {
+                Particle particleType = entry.getKey(); // Particle type (e.g., FLAME, SMOKE)
+
+                // Create the particle packet
                 ParticlePacket packet = new ParticlePacket(
-                        key,
-                        false,
-                        x, y, z,
-                        0f, 0f, 0f,
-                        0f,
-                        1
+                        particleType,
+                        false,  // Long distance sending (optional, usually false for short visibility effects)
+                        x, y, z, // Particle position
+                        0f, 0f, 0f, // No velocity, particles remain static
+                        0f,     // Extra data; typically unused here
+                        1       // Particle count, set to 1 per packet
                 );
-                if (key.equals(Particle.WAX_ON)) {
-                    particleNormalPackets[finalJ] = packet;
-                } else {
-                    particleOrangePackets[finalJ] = packet;
-                }
-            });
+
+                // Add this packet to the corresponding particle list
+                particlePackets.computeIfAbsent(particleType, k -> new ArrayList<>()).add(packet);
+            }
+
 
         }
 
         players.forEach((key, value) -> {
-            if (key.equals(Particle.WAX_ON)) {
-                value.getPlayers().forEach(player ->
-                        player.sendPackets(particleNormalPackets)
-                );
-            } else {
-                value.getPlayers().forEach(player ->
-                        player.sendPackets(particleOrangePackets)
-                );
-            }
+            value.forEach(player -> {
+                particlePackets.get(key).forEach(particlePacket -> player.sendPacket(particlePacket));
+            });
         });
     }
 
@@ -235,7 +231,7 @@ public class ParticleGenerator {
         return Map.entry(start, end);
     }
 
-    public static Task spawnSphereParticles(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, Team> players, double duration) {
+    public static Task spawnSphereParticles(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, List<Player>> players, double duration) {
         double phi = Math.PI * (3 - Math.sqrt(5));
         int points = 200; // Adjust for desired density
 

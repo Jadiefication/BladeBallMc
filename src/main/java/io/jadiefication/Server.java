@@ -1,5 +1,12 @@
 package io.jadiefication;
 
+import io.jadiefication.commands.*;
+import io.jadiefication.commands.debug.DebugCommand;
+import io.jadiefication.commands.particlecommand.ThreeDimensionalParticleCommand;
+import io.jadiefication.commands.particlecommand.TwoDimensionalParticleCommand;
+import io.jadiefication.commands.timecommand.TimeCommand;
+import io.jadiefication.commands.weathercommand.WeatherCommand;
+import io.jadiefication.eventfunctions.EventFunction;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
@@ -15,13 +22,6 @@ import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
-import io.jadiefication.commands.*;
-import io.jadiefication.commands.debug.DebugCommand;
-import io.jadiefication.commands.particlecommand.ThreeDimensionalParticleCommand;
-import io.jadiefication.commands.particlecommand.TwoDimensionalParticleCommand;
-import io.jadiefication.commands.timecommand.TimeCommand;
-import io.jadiefication.commands.weathercommand.WeatherCommand;
-import io.jadiefication.eventfunctions.EventFunction;
 
 import java.io.File;
 import java.net.URI;

@@ -5,7 +5,6 @@ import io.jadiefication.core.ball.entity.BallEntity;
 import io.jadiefication.particlegenerator.ParticleGenerator;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minestom.server.component.DataComponent;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
@@ -17,8 +16,6 @@ import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.UseCooldown;
-import net.minestom.server.network.packet.server.play.ParticlePacket;
-import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 import net.minestom.server.network.packet.server.play.SetTitleTextPacket;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.particle.Particle;
@@ -27,14 +24,12 @@ import net.minestom.server.potion.PotionEffect;
 import net.minestom.server.scoreboard.Team;
 import net.minestom.server.scoreboard.TeamBuilder;
 import net.minestom.server.scoreboard.TeamManager;
-import net.minestom.server.timer.Task;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -53,7 +48,7 @@ public non-sealed class BladeBall implements BallHandler {
     private static final Object homedPlayerLock = new Object();
     private static final Object tasksLock = new Object();
     private static final Object teamLock = new Object();
-    private static final TeamManager manager = new TeamManager();
+    public static final TeamManager manager = new TeamManager();
     private static final Team target = new TeamBuilder("target", manager)
             .teamColor(NamedTextColor.RED)
             .build();
@@ -65,6 +60,8 @@ public non-sealed class BladeBall implements BallHandler {
     public static final ItemStack item = ItemStack.builder(Material.DIAMOND_SWORD)
             .set(ItemComponent.USE_COOLDOWN, new UseCooldown(5, "sword"))
             .build();
+    private static final List<Player> targetList = new ArrayList<>();
+    private static List<Player> otherList = new ArrayList<>();
 
     @Override
     public void update(InstanceContainer container) {
@@ -111,6 +108,8 @@ public non-sealed class BladeBall implements BallHandler {
         synchronized (teamLock) {
             target.addMember(homedUsername);
             other.addMembers(playerNames);
+            targetList.addFirst(homedUponPlayer);
+            otherList = players;
         }
 
         synchronized (ballPositionLock) {
@@ -125,7 +124,7 @@ public non-sealed class BladeBall implements BallHandler {
             BallState.task = ParticleGenerator.spawnSphereParticles(
                     BallState.ballPosition,
                     0.5, 0.5, 0.5,
-                    Map.of(Particle.WAX_ON, target, Particle.WAX_OFF, other),
+                    Map.of(Particle.WAX_ON, targetList, Particle.WAX_OFF, otherList),
                     1.0
             );
         }
@@ -151,13 +150,17 @@ public non-sealed class BladeBall implements BallHandler {
     public void start(InstanceContainer container) {
         container.getPlayers().forEach(player -> {
             player.addEffect(new Potion(PotionEffect.GLOWING, 1, Integer.MAX_VALUE));
-            if (homedUponPlayer != null && player != homedUponPlayer) other.removeMember(player.getUsername());
-            else if (player == homedUponPlayer) target.removeMember(player.getUsername());
+            if (homedUponPlayer != null && player != homedUponPlayer) {
+                other.removeMember(player.getUsername());
+            } else if (player == homedUponPlayer) target.removeMember(player.getUsername());
             PlayerInventory inventory = player.getInventory();
             if (!Arrays.asList(inventory.getItemStacks()).contains(item)) {
                 inventory.setItemStack(0, item);
             }
         });
+
+        otherList.clear();
+        targetList.clear();
 
         BallState.stayingStill = true;
         BallState.ballPosition = new Pos(0.5, 50.0, 0.5);

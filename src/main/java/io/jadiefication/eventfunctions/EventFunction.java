@@ -1,13 +1,23 @@
 package io.jadiefication.eventfunctions;
 
+import io.jadiefication.Nimoh;
+import io.jadiefication.Server;
+import io.jadiefication.commands.debug.gui.DebugGui;
+import io.jadiefication.core.GUI.Border;
+import io.jadiefication.core.ball.BallHandler;
+import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
+import io.jadiefication.customitem.CustomItem;
+import io.jadiefication.customitem.CustomItemHolder;
+import io.jadiefication.permission.Permission;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Entity;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.event.entity.EntityVelocityEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
@@ -15,25 +25,14 @@ import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.inventory.AbstractInventory;
-import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
-import io.jadiefication.Nimoh;
-import io.jadiefication.Server;
-import io.jadiefication.commands.debug.gui.DebugGui;
-import io.jadiefication.core.GUI.Border;
-import io.jadiefication.core.ball.BallHandler;
-import io.jadiefication.core.ball.BladeBall;
-import io.jadiefication.customitem.CustomItem;
-import io.jadiefication.permission.Permission;
-import io.jadiefication.permission.PermissionablePlayer;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 
 import java.util.List;
 import java.util.Objects;
 
-import static io.jadiefication.Nimoh.executorService;
-import static io.jadiefication.Nimoh.game;
+import static io.jadiefication.Nimoh.*;
 
 public abstract class EventFunction implements PlayerDataHandler {
 
@@ -81,10 +80,8 @@ public abstract class EventFunction implements PlayerDataHandler {
     }
 
     public static void onLeave(PlayerDisconnectEvent event) {
-        executorService.submit(() -> {
-            final Player player = event.getPlayer();
-            PlayerDataHandler.updateData(player);
-        });
+        final Player player = event.getPlayer();
+        PlayerDataHandler.updateData(player);
     }
 
 
@@ -122,7 +119,7 @@ public abstract class EventFunction implements PlayerDataHandler {
             axis = "z";
         }
 
-        if (player.hasPermission(Permission.PLACE) && !player.getGameMode().equals(GameMode.ADVENTURE)) {
+        if (player.hasPermission(Permission.PLACE) && !player.getGameMode().equals(GameMode.ADVENTURE) && CustomItemHolder.hasItem(player.getItemInMainHand()).isEmpty()) {
             Block directedBlock;
             if (axisList.contains(block)) {
                 directedBlock = block.withProperty("axis", axis);

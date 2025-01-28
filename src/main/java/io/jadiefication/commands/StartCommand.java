@@ -1,9 +1,9 @@
 package io.jadiefication.commands;
 
-import net.minestom.server.command.builder.Command;
 import io.jadiefication.Nimoh;
 import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import net.minestom.server.command.builder.Command;
 
 public class StartCommand extends Command
 {

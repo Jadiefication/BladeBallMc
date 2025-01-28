@@ -1,13 +1,13 @@
 package io.jadiefication.commands.timecommand;
 
+import io.jadiefication.commands.CommandLogic;
+import io.jadiefication.permission.Permission;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentEnum;
 import net.minestom.server.command.builder.arguments.ArgumentType;
-import io.jadiefication.commands.CommandLogic;
-import io.jadiefication.permission.Permission;
-import io.jadiefication.permission.PermissionablePlayer;
 
 public class TimeCommand extends Command implements CommandLogic {
 

@@ -1,6 +1,8 @@
 package io.jadiefication.core.ball;
 
 import io.jadiefication.Nimoh;
+import io.jadiefication.core.Handler;
+import io.jadiefication.particlegenerator.ParticleGenerator;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -11,10 +13,7 @@ import net.minestom.server.particle.Particle;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
-import io.jadiefication.core.Handler;
-import io.jadiefication.particlegenerator.ParticleGenerator;
 
-import java.util.List;
 import java.util.Set;
 
 /**

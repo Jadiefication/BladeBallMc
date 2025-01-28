@@ -1,6 +1,9 @@
 package io.jadiefication.commands.debug.gui;
 
-import io.jadiefication.core.ball.BallHandler;
+import io.jadiefication.core.GUI.Border;
+import io.jadiefication.core.GUI.Heads;
+import io.jadiefication.customitem.CustomItem;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.MinecraftServer;
@@ -13,10 +16,6 @@ import net.minestom.server.monitoring.BenchmarkManager;
 import net.minestom.server.timer.SchedulerManager;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
-import io.jadiefication.core.GUI.Border;
-import io.jadiefication.core.GUI.Heads;
-import io.jadiefication.customitem.CustomItem;
-import io.jadiefication.permission.PermissionablePlayer;
 
 import java.util.HashMap;
 import java.util.List;
