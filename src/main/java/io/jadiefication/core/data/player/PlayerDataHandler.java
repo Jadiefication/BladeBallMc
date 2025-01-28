@@ -1,6 +1,8 @@
 package io.jadiefication.core.data.player;
 
 import io.jadiefication.core.Handler;
+import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.nbt.ListBinaryTag;
 import net.minestom.server.entity.Player;
 import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
@@ -14,8 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -164,36 +164,31 @@ public interface PlayerDataHandler extends Handler {
 
 
     private static void prepareStatements(String uuid, int slot, ItemStack item, PreparedStatement preparedStatement) throws SQLException {
-        int cmd = 0;
-        String customName = null;
-        AtomicReference<String> customLore = null;
-
         preparedStatement.setString(1, uuid);
         preparedStatement.setInt(2, slot);
         preparedStatement.setString(3, item.material().name());
 
-        try {
-            cmd = Objects.requireNonNull(item.get(ItemComponent.CUSTOM_MODEL_DATA));
-            customName = ((TextComponent) Objects.requireNonNull(item.get(ItemComponent.CUSTOM_NAME))).getText();
-            AtomicReference<String> finalCustomLore = customLore;
-            Objects.requireNonNull(item.get(ItemComponent.LORE)).forEach(line -> {
-                String text = ((TextComponent) line).getText();
-                String s;
-                if (finalCustomLore == null) s = text;
-                else s = finalCustomLore.get() + "\n" + text;
-                finalCustomLore.set(s);
-            });
-            customLore = finalCustomLore;
+        CompoundBinaryTag nbt = item.toItemNBT();
 
-        } catch (Exception ignored) {
-            cmd = 0;
-            customName = null;
-            customLore = null;
-        }
+        String customName = nbt.getString("custom_name");
+        AtomicInteger i = new AtomicInteger();
+        ListBinaryTag list = nbt.getList("lore");
+        List<String> customLoreList = new ArrayList<>();
+        nbt.getList("Lore").forEach(value -> {
+            customLoreList.set(i.get(), list.getString(i.get()));
+
+            i.getAndIncrement();
+        });
+        AtomicReference<String> customLore = new AtomicReference<>("");
+        customLoreList.forEach(value -> {
+            String s = customLore + value;
+            customLore.set(s);
+        });
+        int cmd = nbt.getInt("custom_model_data");
 
         preparedStatement.setInt(4, cmd);
         preparedStatement.setString(5, customName);
-        preparedStatement.setString(6, String.valueOf(customLore));
+        preparedStatement.setString(6, String.valueOf(customLoreList));
         preparedStatement.executeUpdate();
     }
 

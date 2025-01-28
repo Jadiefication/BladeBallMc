@@ -1,14 +1,25 @@
 package io.jadiefication.core.ball;
 
+import io.jadiefication.Nimoh;
 import io.jadiefication.core.ball.entity.BallEntity;
 import io.jadiefication.particlegenerator.ParticleGenerator;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.minestom.server.component.DataComponent;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.InstanceContainer;
 import net.minestom.server.instance.block.Block;
+import net.minestom.server.inventory.PlayerInventory;
+import net.minestom.server.item.ItemComponent;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
+import net.minestom.server.item.component.UseCooldown;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.network.packet.server.play.SetCooldownPacket;
+import net.minestom.server.network.packet.server.play.SetTitleTextPacket;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.potion.Potion;
@@ -19,9 +30,11 @@ import net.minestom.server.scoreboard.TeamManager;
 import net.minestom.server.timer.Task;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -49,6 +62,9 @@ public non-sealed class BladeBall implements BallHandler {
             .collisionRule(TeamsPacket.CollisionRule.ALWAYS)
             .build();
     private static double speedPerBlocks = 0.5;
+    public static final ItemStack item = ItemStack.builder(Material.DIAMOND_SWORD)
+            .set(ItemComponent.USE_COOLDOWN, new UseCooldown(5, "sword"))
+            .build();
 
     @Override
     public void update(InstanceContainer container) {
@@ -56,6 +72,13 @@ public non-sealed class BladeBall implements BallHandler {
 
         BallState.dtCounter.cancel();
         BallState.dt = 0;
+
+        if (container.getPlayers().size() == 1) {
+            Player player = (Player) container.getPlayers().toArray()[0];
+            player.sendPacket(new SetTitleTextPacket(Component.text("Winner")));
+            Nimoh.updateTask.cancel();
+            BallState.task.cancel();
+        }
 
         if (!hasPlayer) {
             CompletableFuture.supplyAsync(() -> BallState.firstTarget ? BallState.findFirstTarget(container) : findTarget(container)).thenAccept(result -> {
@@ -99,13 +122,6 @@ public non-sealed class BladeBall implements BallHandler {
         synchronized (tasksLock) {
             // Clear existing tasks
             BallState.task.cancel();
-            /*BallState.task = ParticleGenerator.spawnSphereParticles(
-                    container,
-                    BallState.ballPosition,
-                    0.5, 0.5, 0.5,
-                    players.isEmpty() ? Particle.WAX_ON : Particle.WAX_OFF,
-                    1.0
-            );*/
             BallState.task = ParticleGenerator.spawnSphereParticles(
                     BallState.ballPosition,
                     0.5, 0.5, 0.5,
@@ -137,10 +153,14 @@ public non-sealed class BladeBall implements BallHandler {
             player.addEffect(new Potion(PotionEffect.GLOWING, 1, Integer.MAX_VALUE));
             if (homedUponPlayer != null && player != homedUponPlayer) other.removeMember(player.getUsername());
             else if (player == homedUponPlayer) target.removeMember(player.getUsername());
+            PlayerInventory inventory = player.getInventory();
+            if (!Arrays.asList(inventory.getItemStacks()).contains(item)) {
+                inventory.setItemStack(0, item);
+            }
         });
 
         BallState.stayingStill = true;
-        BallState.ballPosition = new Pos(0.5, 45.0, 0.5);
+        BallState.ballPosition = new Pos(0.5, 50.0, 0.5);
         hasPlayer = false;
         if (BallState.task != null) {
             BallState.task.cancel();

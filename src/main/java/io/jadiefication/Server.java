@@ -80,6 +80,7 @@ public sealed interface Server permits Nimoh {
         handler.addListener(PlayerDisconnectEvent.class, EventFunction::onLeave);
         handler.addListener(EntityAttackEvent.class, EventFunction::onBallHit);
         handler.addListener(InventoryOpenEvent.class, EventFunction::onInventoryOpen);
+        handler.addListener(PlayerUseItemEvent.class, EventFunction::onItemUse);
 
     }
 }

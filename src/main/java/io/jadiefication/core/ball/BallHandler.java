@@ -141,7 +141,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
         public static boolean isActive = false;
         public static boolean stayingStill = true;
         public static Task task;
-        public static Pos ballPosition = new Pos(0.5, 45.0, 0.5);
+        public static Pos ballPosition = new Pos(0.5, 50.0, 0.5);
         public static int dt;
         public final static Task dtCounter = MinecraftServer.getSchedulerManager().scheduleTask(() -> {
             BallState.dt++;

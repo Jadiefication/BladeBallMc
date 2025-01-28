@@ -15,6 +15,7 @@ import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.inventory.AbstractInventory;
+import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
@@ -26,6 +27,7 @@ import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.minestom.server.item.Material;
+import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +75,8 @@ public abstract class EventFunction implements PlayerDataHandler {
             }
 
             // Set the respawn point after all other tasks are completed
-            player.setRespawnPoint(new Pos(0.0, 44.0, 0.0));
+            player.setRespawnPoint(new Pos(0.0, 46.0, 0.0));
+            player.getInventory().setItemStack(5, Nimoh.dash);
         });
     }
 
@@ -141,6 +144,13 @@ public abstract class EventFunction implements PlayerDataHandler {
         event.getResponseData().setMaxPlayer(20);
     }
 
+    public static void onItemUse(PlayerUseItemEvent event) {
+        ItemStack item = event.getItemStack();
+        if (CustomItem.getItems().contains(item)) {
+            CustomItem.getItemFunctionality(item).accept(event);
+        }
+    }
+
     public static void onInventoryClick(InventoryPreClickEvent event) {
         AbstractInventory inventory = event.getInventory();
 
@@ -167,11 +177,12 @@ public abstract class EventFunction implements PlayerDataHandler {
     }
 
     public static void onBallHit(EntityAttackEvent event) {
-        Entity player = event.getEntity();
-        if (event.getTarget().equals(BladeBall.entity)) {
+        Player player = (Player) event.getEntity();
+        if (event.getTarget().equals(BladeBall.entity) && player.getItemInMainHand().equals(BladeBall.item)) {
+            player.sendPacket(new SetCooldownPacket(String.valueOf(BladeBall.item.material().id()), 1000));
             game.setPlayerAttached(false);
             BallHandler.BallState.firstTarget = false;
-            BallHandler.BallState.playerWhomHitTheBall = (net.minestom.server.entity.Player) player;
+            BallHandler.BallState.playerWhomHitTheBall = player;
             game.multipleSpeed(0.1);
         }
     }
