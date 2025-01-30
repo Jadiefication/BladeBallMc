@@ -1,6 +1,7 @@
 package io.jadiefication;
 
 import io.jadiefication.customitem.CustomItem;
+import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.particlegenerator.ParticleGenerator;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
@@ -11,7 +12,6 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.particle.Particle;
-import net.minestom.server.timer.SchedulerManager;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-public interface CustomItemsHolder {
+public interface AbilitiesHolder {
 
     Map<UUID, Long> cooldownMap = new HashMap<>();
 
@@ -33,23 +33,36 @@ public interface CustomItemsHolder {
                 if (!cooldownMap.containsKey(player.getUuid())) {
                     Pos pos = player.getPosition();
                     Vec direction = pos.direction().normalize();
-                    Vec movement = direction.mul(4);
+                    Vec movement = direction.mul(48);
 
-                    Task task = ParticleGenerator.spawnSphereParticles(new Pos(pos.x(), pos.y() + 2, pos.z()),
-                            0.5, 0.5, 0.5, Map.of(Particle.WAX_OFF, List.of(player)), 1);
+                    /*Pos addedPos = pos; // Start from the player's current position
+                    Vec step = movement.div(4); // Divide movement into smaller steps
 
-                    Pos addedPos = pos.add(movement);
-                    addedPos = Nimoh.collisionDetection(addedPos, player);
+                    // Iterate 4 times for the 4 steps
+                    for (int i = 0; i < 4; i++) {
+                        // Update the next position step by step
+                        addedPos = addedPos.add(step);
 
-                    Pos finalAddedPos = addedPos;
-                    Nimoh.scheduler.scheduleTask(() -> {
-                        // Teleport the player after the delay
-                        player.teleport(finalAddedPos);
+                        // Check for collision at current step
+                        Block block = Nimoh.instanceContainer.getBlock(addedPos);
+                        if (block != Block.AIR) {
+                            // If collision happens, stop further movement
+                            addedPos = addedPos.sub(step); // Go back one step
+                            break; // Break out of the loop since movement is blocked
+                        }
+                    }
 
-                        // Cancel the particle task after teleporting (stop the effect)
-                        task.cancel();
+                    Pos finalAddedPos = addedPos;*/
+                    Pos placeWhereWeWillGo = pos.add(movement);
+                    player.setVelocity(movement);
 
-                    }, TaskSchedule.millis(150), TaskSchedule.stop());
+                    // Start a task to monitor the player's position
+                    Task task = Nimoh.scheduler.scheduleTask(() -> {
+                        // Check if the player is at or above the target height
+                        if (player.getPosition().equals(placeWhereWeWillGo)) {
+                            player.setVelocity(new Vec(0, 0, 0)); // Stop the upward motion
+                        }
+                    }, TaskSchedule.millis(10), TaskSchedule.millis(10)); // Tasks repeat regularly
 
                     cooldownMap.put(player.getUuid(), 30L);
                 }
@@ -84,7 +97,7 @@ public interface CustomItemsHolder {
                 if (!cooldownMap.containsKey(player.getUuid())) {
                     AtomicReference<Task> taskRevertReference = new AtomicReference<>();
                     AtomicReference<Task> taskReference = new AtomicReference<>();
-                    AtomicInteger heightCounter = new AtomicInteger(0); // Tracks the height built
+                    AtomicInteger heightCounter = new AtomicInteger(1); // Tracks the height built
 
                     Pos initialPosition = player.getPosition(); // Get the player's starting position
 
@@ -109,10 +122,7 @@ public interface CustomItemsHolder {
 
                     Task revertTask = Nimoh.scheduler.scheduleTask(() -> {
                         for (int j = 1; j < 4; j++) {
-                            player.setNoGravity(true);
                             Nimoh.instanceContainer.setBlock(player.getPosition().sub(0, j, 0), Block.AIR);
-                            player.teleport(player.getPosition().sub(0, 1, 0));
-                            player.setNoGravity(false);
                         }
                         Task thisTask = taskRevertReference.get();
                         if (thisTask != null) {
@@ -131,4 +141,8 @@ public interface CustomItemsHolder {
     static boolean isAbility(ItemStack item) {
         return item == dash || item == superJump || item == platform;
     }
+
+    Map<CustomItemHolder, Boolean> isAbility = Map.of(CustomItemHolder.hasItem(dash).isPresent() ? CustomItemHolder.hasItem(dash).get() : null, true,
+            CustomItemHolder.hasItem(superJump).isPresent() ? CustomItemHolder.hasItem(superJump).get() : null, true,
+            CustomItemHolder.hasItem(platform).isPresent() ? CustomItemHolder.hasItem(platform).get() : null, true);
 }

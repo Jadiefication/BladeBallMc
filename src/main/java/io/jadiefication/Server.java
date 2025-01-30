@@ -40,8 +40,8 @@ public sealed interface Server permits Nimoh {
 
     private static ResourcePackInfo getPackInfo() {
         return ResourcePackInfo.resourcePackInfo()
-                .uri(URI.create("https://download.mc-packs.net/pack/58becd61d222132d85f13cd8f50c359cdd6d631d.zip"))
-                .hash("58becd61d222132d85f13cd8f50c359cdd6d631d")
+                .uri(URI.create("https://download.mc-packs.net/pack/948d23a556215fd92e141dfe6541524cdf3e3ec3.zip"))
+                .hash("948d23a556215fd92e141dfe6541524cdf3e3ec3")
                 .build();
     }
 
@@ -51,14 +51,31 @@ public sealed interface Server permits Nimoh {
             manager.getInstances().forEach(instance -> {
                 instance.sendMessage(Component.text("§4§lServer shutting down"));
             });
-            for (String worldPath : worldPaths) {
+            manager.getInstances().forEach(Instance::saveChunksToStorage);
+            /*for (String worldPath : worldPaths) {
                 File worldFolder = new File(worldPath);
                 boolean ignored = worldFolder.delete();
-            }
+                deleteFolder(worldFolder);
+                System.out.println("Deleted folder at: " + worldFolder.getAbsolutePath() + " : " + ignored);
+            }*/
             System.out.println("Saving chunks...");
-            manager.getInstances().forEach(Instance::saveChunksToStorage);
         });
     }
+
+    static boolean deleteFolder(File folder) {
+        if (folder.isDirectory()) {
+            // Recursively delete contents
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    deleteFolder(file); // Recursive call
+                }
+            }
+        }
+        // Delete the file or empty directory
+        return folder.delete();
+    }
+
 
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();

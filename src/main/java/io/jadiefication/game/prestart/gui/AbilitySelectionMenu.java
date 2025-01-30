@@ -1,6 +1,6 @@
 package io.jadiefication.game.prestart.gui;
 
-import io.jadiefication.CustomItemsHolder;
+import io.jadiefication.AbilitiesHolder;
 import io.jadiefication.Nimoh;
 import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.gui.Border;
@@ -14,7 +14,6 @@ import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.particle.Particle;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class AbilitySelectionMenu extends Inventory {
     public AbilitySelectionMenu() {
         super(InventoryType.CHEST_6_ROW, Component.text("Abilities"));
 
-        List<ItemStack> abilities = List.of(CustomItemsHolder.dash, CustomItemsHolder.superJump, CustomItemsHolder.platform);
+        List<ItemStack> abilities = List.of(AbilitiesHolder.dash, AbilitiesHolder.superJump, AbilitiesHolder.platform);
         List<ItemStack> swords = List.of(BladeBall.item, CustomItem.registerItem(Component.text("§b§lDiamond Scythe"), List.of(), Material.DIAMOND_SWORD,
                 1, event -> {
                     PlayerUseItemEvent e = ((PlayerUseItemEvent) event);
