@@ -1,4 +1,4 @@
-package io.jadiefication.core.GUI;
+package io.jadiefication.core.gui;
 
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.kyori.adventure.text.Component;

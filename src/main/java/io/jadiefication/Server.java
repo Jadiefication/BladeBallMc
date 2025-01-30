@@ -40,8 +40,8 @@ public sealed interface Server permits Nimoh {
 
     private static ResourcePackInfo getPackInfo() {
         return ResourcePackInfo.resourcePackInfo()
-                .uri(URI.create("https://download.mc-packs.net/pack/d663cb18e12c5aa9c894ebeead28521ea1aae020.zip"))
-                .hash("d663cb18e12c5aa9c894ebeead28521ea1aae020")
+                .uri(URI.create("https://download.mc-packs.net/pack/58becd61d222132d85f13cd8f50c359cdd6d631d.zip"))
+                .hash("58becd61d222132d85f13cd8f50c359cdd6d631d")
                 .build();
     }
 
@@ -81,6 +81,7 @@ public sealed interface Server permits Nimoh {
         handler.addListener(EntityAttackEvent.class, EventFunction::onBallHit);
         handler.addListener(InventoryOpenEvent.class, EventFunction::onInventoryOpen);
         handler.addListener(PlayerUseItemEvent.class, EventFunction::onItemUse);
+        handler.addListener(PlayerSpawnEvent.class, EventFunction::onWorldJoin);
 
     }
 }

@@ -22,6 +22,7 @@ import net.minestom.server.instance.block.Block;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
+import net.minestom.server.network.packet.server.play.SetExperiencePacket;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.scoreboard.Team;
@@ -30,16 +31,14 @@ import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
+public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, CustomItemsHolder {
 
     public static GlobalEventHandler globalEventHandler;
     public static InstanceContainer instanceContainer;
@@ -49,33 +48,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
     public static InstanceManager instanceManager;
     public static final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public static final ItemStack dash = CustomItem.registerItem(Component.text("§8Dash ability"), List.of(Component.text("Use this ability to dash forward")),
-            Material.BLACK_STAINED_GLASS_PANE, 1, event -> {
-                PlayerUseItemEvent e = (PlayerUseItemEvent) event;
-        final Player player = e.getPlayer();
-        Pos pos = player.getPosition();
-        Vec direction = pos.direction().normalize();
-        Vec movement = direction.mul(4);
-
-        Task task = ParticleGenerator.spawnSphereParticles(new Pos(pos.x(), pos.y() + 2, pos.z()),
-                0.5, 0.5, 0.5, Map.of(Particle.WAX_OFF, List.of(player)), 1);
-
-        Pos addedPos = pos.add(movement);
-        addedPos = collisionDetection(addedPos, player);
-
-        Pos finalAddedPos = addedPos;
-        scheduler.scheduleTask(() -> {
-            // Teleport the player after the delay
-            player.teleport(finalAddedPos);
-
-            // Cancel the particle task after teleporting (stop the effect)
-            task.cancel();
-
-        }, TaskSchedule.millis(150), TaskSchedule.stop());
-
-    });
-
-    private static Pos collisionDetection(Pos pos, Player player) {
+    public static Pos collisionDetection(Pos pos, Player player) {
         if (pos.y() < 43) {
             pos = new Pos(pos.x(), 44, pos.z());
         }
@@ -112,6 +85,29 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler {
 
         server.start("0.0.0.0", scanner.nextInt());
         game = new BladeBall();
+
+        scheduler.scheduleTask(() -> {
+            Iterator<Map.Entry<UUID, Long>> iterator = CustomItemsHolder.cooldownMap.entrySet().iterator();
+
+            while (iterator.hasNext()) {
+                Map.Entry<UUID, Long> entry = iterator.next();
+                UUID uuid = entry.getKey();
+                long newTime = entry.getValue() - 1;
+                float percentage = (float) newTime / 30; // Assuming max cooldown is 30 seconds
+                Player player = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(uuid);
+
+                if (newTime <= 0) {
+                    iterator.remove(); // Safe removal from the map
+                    player.sendPacket(new SetExperiencePacket(0, 0, 0));
+                } else {
+                    entry.setValue(newTime); // Update the current value
+                }
+
+                if (player != null && CustomItemsHolder.cooldownMap.containsKey(player.getUuid())) {
+                    player.sendPacket(new SetExperiencePacket(percentage, (int) newTime, 0));
+                }
+            }
+        }, TaskSchedule.seconds(1), TaskSchedule.seconds(1));
     }
 
     private static void loadWorld(AnvilLoader anvilLoader) {

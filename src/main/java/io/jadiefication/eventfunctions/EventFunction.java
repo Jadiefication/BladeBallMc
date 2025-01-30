@@ -1,14 +1,16 @@
 package io.jadiefication.eventfunctions;
 
+import io.jadiefication.CustomItemsHolder;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.commands.debug.gui.DebugGui;
-import io.jadiefication.core.GUI.Border;
+import io.jadiefication.core.gui.Border;
 import io.jadiefication.core.ball.BallHandler;
 import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
+import io.jadiefication.game.prestart.gui.AbilitySelectionMenu;
 import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
@@ -17,7 +19,6 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.entity.EntityAttackEvent;
-import net.minestom.server.event.entity.EntityVelocityEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
@@ -31,6 +32,7 @@ import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static io.jadiefication.Nimoh.*;
 
@@ -75,13 +77,17 @@ public abstract class EventFunction implements PlayerDataHandler {
 
             // Set the respawn point after all other tasks are completed
             player.setRespawnPoint(new Pos(0.0, 46.0, 0.0));
-            player.getInventory().setItemStack(5, Nimoh.dash);
         });
+    }
+
+    public static void onWorldJoin(PlayerSpawnEvent event) {
+        event.getPlayer().openInventory(new AbilitySelectionMenu());
     }
 
     public static void onLeave(PlayerDisconnectEvent event) {
         final Player player = event.getPlayer();
-        PlayerDataHandler.updateData(player);
+        CustomItemsHolder.cooldownMap.remove(player.getUuid());
+        //PlayerDataHandler.updateData(player);
     }
 
 
@@ -150,6 +156,7 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onInventoryClick(InventoryPreClickEvent event) {
         AbstractInventory inventory = event.getInventory();
+        Player player = event.getPlayer();
 
         if (inventory instanceof DebugGui) {
             ItemStack item = event.getClickedItem();
@@ -158,6 +165,20 @@ public abstract class EventFunction implements PlayerDataHandler {
             } else if (item.equals(DebugGui.createPerformanceCheckerItem())) {
                 CustomItem.getItemFunctionality(DebugGui.createPerformanceCheckerItem()).accept(event);
             }
+        }
+        if (inventory instanceof AbilitySelectionMenu) {
+            ItemStack item = event.getClickedItem();
+            Optional<CustomItemHolder> customItem = CustomItemHolder.hasItem(item);
+            if (item.equals(Border.border)) {
+            } else if (item.equals(BladeBall.item)) {
+                player.getInventory().addItemStack(BladeBall.item);
+            } else if (customItem.isPresent()) {
+                ItemStack itemToGive = customItem.get().item().withCustomName(customItem.get().title())
+                        .withCustomModelData(customItem.get().customModelData())
+                                .withLore(customItem.get().lore());
+                player.getInventory().addItemStack(itemToGive);
+            }
+            event.setCancelled(true);
         }
     }
 
@@ -175,8 +196,9 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onBallHit(EntityAttackEvent event) {
         Player player = (Player) event.getEntity();
-        if (event.getTarget().equals(BladeBall.entity) && player.getItemInMainHand().equals(BladeBall.item)) {
-            player.sendPacket(new SetCooldownPacket(String.valueOf(BladeBall.item.material().id()), 1000));
+        if (event.getTarget().equals(BladeBall.entity) && (player.getItemInMainHand().equals(BladeBall.item) || CustomItemHolder.hasItem(player.getItemInMainHand()).isPresent() &&
+                !(CustomItemsHolder.isAbility(player.getItemInMainHand())))) {
+            player.sendPacket(new SetCooldownPacket(String.valueOf(player.getItemInMainHand().material().id()), 1000));
             game.setPlayerAttached(false);
             BallHandler.BallState.firstTarget = false;
             BallHandler.BallState.playerWhomHitTheBall = player;

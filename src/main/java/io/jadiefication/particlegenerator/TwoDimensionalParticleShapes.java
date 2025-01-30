@@ -17,6 +17,12 @@ public enum TwoDimensionalParticleShapes {
         public void apply(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
             ParticleGenerator.spawnSquareParticles(instance, center, radiusX, radiusY, particle, duration);
         }
+    },
+    CIRCLE {
+        @Override
+        public void apply(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+            ParticleGenerator.spawnCircleParticles(instance, center, radiusX, radiusY, particle, duration);
+        }
     };
 
     public abstract void apply(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration);
