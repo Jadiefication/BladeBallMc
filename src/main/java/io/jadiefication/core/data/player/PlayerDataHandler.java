@@ -2,6 +2,7 @@ package io.jadiefication.core.data.player;
 
 import io.jadiefication.core.Handler;
 import io.jadiefication.customitem.CustomItemHolder;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
 import net.kyori.adventure.nbt.ListBinaryTag;
 import net.kyori.adventure.text.Component;
@@ -38,6 +39,22 @@ public interface PlayerDataHandler extends Handler {
             }
         }
         startDatabase();
+    }
+
+    static void getCurrency(Player player) {
+        executorService.submit(() -> {
+            try (Connection connection = DriverManager.getConnection(url)) {
+                PreparedStatement statement = connection.prepareStatement("SELECT currency FROM player_currency WHERE player_uuid = ?");
+                statement.setString(1, player.getUuid().toString());
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    ((PermissionablePlayer) player).currencyAmount = resultSet.getInt("currency");
+                } finally {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     static void getData(Player player) {
@@ -118,9 +135,17 @@ public interface PlayerDataHandler extends Handler {
                     customlore TEXT
                 )
             """;
+            String createPlayerCoinTable = """
+                    CREATE TABLE IF NOT EXISTS player_currency (
+                      id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      player_uuid TEXT NOT NULL,
+                      currency INTEGER
+                    )
+                    """;
 
             try (Statement statement = connection.createStatement()) {
                 statement.execute(createPlayerTable);
+                statement.execute(createPlayerCoinTable);
             } finally {
                 connection.close();
             }
@@ -159,6 +184,42 @@ public interface PlayerDataHandler extends Handler {
             e.printStackTrace();
         }
     }
+
+    static void setCurrency(PermissionablePlayer player) {
+        executorService.submit(() -> {
+            try (Connection connection = DriverManager.getConnection(url)) {
+                // First check if player exists
+                String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
+                try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
+                    checkStatement.setString(1, player.getUuid().toString());
+                    ResultSet rs = checkStatement.executeQuery();
+                    rs.next();
+                    if (rs.getInt(1) > 0) {
+                        // Update existing player
+                        PreparedStatement updateStatement = connection.prepareStatement(
+                                "UPDATE player_currency SET currency = ? WHERE player_uuid = ?"
+                        );
+                        updateStatement.setInt(1, player.currencyAmount);
+                        updateStatement.setString(2, player.getUuid().toString());
+                        updateStatement.executeUpdate();
+                    } else {
+                        // Insert new player
+                        PreparedStatement insertStatement = connection.prepareStatement(
+                                "INSERT INTO player_currency (player_uuid, currency) VALUES (?, ?)"
+                        );
+                        insertStatement.setString(1, player.getUuid().toString());
+                        insertStatement.setInt(2, player.currencyAmount);
+                        insertStatement.executeUpdate();
+                    }
+                } finally {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 
 
     private static void prepareStatements(String uuid, int slot, ItemStack item, PreparedStatement preparedStatement) throws SQLException {

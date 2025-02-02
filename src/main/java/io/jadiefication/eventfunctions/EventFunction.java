@@ -8,6 +8,7 @@ import io.jadiefication.core.gui.Border;
 import io.jadiefication.core.ball.BallHandler;
 import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
+import io.jadiefication.core.item.SwordItems;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.game.prestart.gui.AbilitySelectionMenu;
@@ -20,6 +21,7 @@ import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
 import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
@@ -59,9 +61,10 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onJoin(AsyncPlayerConfigurationEvent event) {
         final PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
+        PlayerDataHandler.getCurrency(player);
 
         // Set the spawning instance immediately in the main thread to avoid NullPointerException
-        event.setSpawningInstance(Nimoh.instanceContainer);
+        event.setSpawningInstance(instanceContainer);
 
         // Use a thread pool for better management of asynchronous tasks
         executorService.submit(() -> {
@@ -87,8 +90,10 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onLeave(PlayerDisconnectEvent event) {
         final Player player = event.getPlayer();
+        if (BladeBall.isHomedUponPlayer(player)) game.hasPlayer = false;
         AbilitiesHolder.cooldownMap.remove(player.getUuid());
-        //PlayerDataHandler.updateData(player);
+        PlayerDataHandler.setCurrency(((PermissionablePlayer) player));
+        PlayerDataHandler.updateData(player);
     }
 
 
@@ -176,19 +181,28 @@ public abstract class EventFunction implements PlayerDataHandler {
         if (inventory instanceof AbilitySelectionMenu) {
             ItemStack item = event.getClickedItem();
             Optional<CustomItemHolder> customItem = CustomItemHolder.hasItem(item);
-            int slot = 0;
-            if (AbilitiesHolder.isAbility(item)) slot = 1;
+            if (AbilitiesHolder.isAbility(item)) {
+                AbilitySelectionMenu.hasAbility = true;
+                player.getInventory().setItemStack(1, Objects.requireNonNull(AbilitiesHolder.getAbility(item)));
+            }
             if (item.equals(Border.border)) {
                 return;
-            } else if (item.equals(BladeBall.item)) {
-                player.getInventory().setItemStack(slot, BladeBall.item);
-            } else if (customItem.isPresent()) {
-                ItemStack itemToGive = customItem.get().item().withCustomName(customItem.get().title())
-                        .withCustomModelData(customItem.get().customModelData())
-                                .withLore(customItem.get().lore());
-                player.getInventory().setItemStack(slot, itemToGive);
+            } else if (item.equals(SwordItems.diamondSword)) {
+                player.getInventory().setItemStack(0, BladeBall.item);
+                AbilitySelectionMenu.hasSword = true;
+            } else if (item.equals(SwordItems.diamondScythe)) {
+                ItemStack itemToGive = customItem.get().item();
+                player.getInventory().setItemStack(0, itemToGive);
+                AbilitySelectionMenu.hasSword = true;
             }
             event.setCancelled(true);
+        }
+    }
+
+    public static void onInventoryClose(InventoryCloseEvent event) {
+        AbstractInventory inventory = event.getInventory();
+        if (inventory instanceof AbilitySelectionMenu) {
+            if (!AbilitySelectionMenu.hasSword && !AbilitySelectionMenu.hasAbility) event.setNewInventory(new AbilitySelectionMenu());
         }
     }
 

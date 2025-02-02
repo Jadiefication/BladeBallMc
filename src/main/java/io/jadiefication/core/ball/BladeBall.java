@@ -1,10 +1,14 @@
 package io.jadiefication.core.ball;
 
 import io.jadiefication.Nimoh;
+import io.jadiefication.Server;
 import io.jadiefication.core.ball.entity.BallEntity;
 import io.jadiefication.particlegenerator.ParticleGenerator;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.minestom.server.advancements.FrameType;
+import net.minestom.server.advancements.Notification;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
@@ -62,6 +66,7 @@ public non-sealed class BladeBall implements BallHandler {
             .build();
     private static final List<Player> targetList = new ArrayList<>();
     private static List<Player> otherList = new ArrayList<>();
+    private static final Notification winnerNotification = new Notification(Component.text("You gained 20 Coins", NamedTextColor.GOLD), FrameType.CHALLENGE, Server.coin);
 
     @Override
     public void update(InstanceContainer container) {
@@ -71,8 +76,10 @@ public non-sealed class BladeBall implements BallHandler {
         BallState.dt = 0;
 
         if (container.getPlayers().size() == 1) {
-            Player player = (Player) container.getPlayers().toArray()[0];
+            PermissionablePlayer player = (PermissionablePlayer) container.getPlayers().toArray()[0];
             player.sendPacket(new SetTitleTextPacket(Component.text("Winner")));
+            player.sendNotification(winnerNotification);
+            player.currencyAmount += 20;
             Nimoh.updateTask.cancel();
             BallState.task.cancel();
         }
@@ -153,10 +160,6 @@ public non-sealed class BladeBall implements BallHandler {
             if (homedUponPlayer != null && player != homedUponPlayer) {
                 other.removeMember(player.getUsername());
             } else if (player == homedUponPlayer) target.removeMember(player.getUsername());
-            PlayerInventory inventory = player.getInventory();
-            if (!Arrays.asList(inventory.getItemStacks()).contains(item)) {
-                inventory.setItemStack(0, item);
-            }
         });
 
         otherList.clear();
@@ -251,6 +254,10 @@ public non-sealed class BladeBall implements BallHandler {
             speedPerBlocks = MAX_SPEED;
         }
 
+    }
+
+    public static boolean isHomedUponPlayer(Player player) {
+        return player.equals(homedUponPlayer);
     }
 
 }

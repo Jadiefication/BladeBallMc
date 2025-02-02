@@ -142,7 +142,13 @@ public interface AbilitiesHolder {
         return item == dash || item == superJump || item == platform;
     }
 
-    Map<CustomItemHolder, Boolean> isAbility = Map.of(CustomItemHolder.hasItem(dash).isPresent() ? CustomItemHolder.hasItem(dash).get() : null, true,
-            CustomItemHolder.hasItem(superJump).isPresent() ? CustomItemHolder.hasItem(superJump).get() : null, true,
-            CustomItemHolder.hasItem(platform).isPresent() ? CustomItemHolder.hasItem(platform).get() : null, true);
+    static ItemStack getAbility(ItemStack item) {
+        if (!isAbility(item)) return null;
+        else {
+            CustomItemHolder abilityHolder = CustomItemHolder.hasItem(item).get();
+            return abilityHolder.item().withCustomName(abilityHolder.title())
+                    .withLore(abilityHolder.lore())
+                    .withCustomModelData(abilityHolder.customModelData());
+        }
+    }
 }

@@ -12,6 +12,7 @@ public class PermissionablePlayer extends Player {
 
     private final List<PermissionableGroup> groups = new ArrayList<>();
     public boolean hasProfilerOn = false;
+    public int currencyAmount = 0;
 
     public PermissionablePlayer(@NotNull PlayerConnection playerConnection, @NotNull GameProfile gameProfile) {
         super(playerConnection, gameProfile);

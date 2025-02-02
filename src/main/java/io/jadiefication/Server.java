@@ -6,6 +6,7 @@ import io.jadiefication.commands.particlecommand.ThreeDimensionalParticleCommand
 import io.jadiefication.commands.particlecommand.TwoDimensionalParticleCommand;
 import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
+import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.eventfunctions.EventFunction;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
@@ -16,18 +17,24 @@ import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.entity.EntityAttackEvent;
+import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
+import net.minestom.server.item.ItemStack;
+import net.minestom.server.item.Material;
 
 import java.io.File;
 import java.net.URI;
 import java.util.List;
 
 public sealed interface Server permits Nimoh {
+
+    ItemStack coin = CustomItem.registerItem(Component.text("Coin"), List.of(), Material.AMETHYST_SHARD, 2, ignored -> {
+    });
 
     static void sendPackInfo(Player player) {
         player.sendResourcePacks(ResourcePackRequest.resourcePackRequest()
@@ -52,28 +59,8 @@ public sealed interface Server permits Nimoh {
                 instance.sendMessage(Component.text("§4§lServer shutting down"));
             });
             manager.getInstances().forEach(Instance::saveChunksToStorage);
-            /*for (String worldPath : worldPaths) {
-                File worldFolder = new File(worldPath);
-                boolean ignored = worldFolder.delete();
-                deleteFolder(worldFolder);
-                System.out.println("Deleted folder at: " + worldFolder.getAbsolutePath() + " : " + ignored);
-            }*/
             System.out.println("Saving chunks...");
         });
-    }
-
-    static boolean deleteFolder(File folder) {
-        if (folder.isDirectory()) {
-            // Recursively delete contents
-            File[] files = folder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    deleteFolder(file); // Recursive call
-                }
-            }
-        }
-        // Delete the file or empty directory
-        return folder.delete();
     }
 
 
@@ -99,6 +86,7 @@ public sealed interface Server permits Nimoh {
         handler.addListener(InventoryOpenEvent.class, EventFunction::onInventoryOpen);
         handler.addListener(PlayerUseItemEvent.class, EventFunction::onItemUse);
         handler.addListener(PlayerSpawnEvent.class, EventFunction::onWorldJoin);
+        handler.addListener(InventoryCloseEvent.class, EventFunction::onInventoryClose);
 
     }
 }

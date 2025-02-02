@@ -19,6 +19,9 @@ import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,24 +37,10 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
     public static InstanceManager instanceManager;
     public static final ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public static Pos collisionDetection(Pos pos, Player player) {
-        if (pos.y() < 43) {
-            pos = new Pos(pos.x(), 44, pos.z());
-        }
-        if (pos.y() > 54) {
-            return player.getPosition();
-        }
-        if (instanceContainer.getBlock(pos) != Block.AIR) {
-            return collisionDetection(pos.add(0, 1, 0), player);
-        }
-        return pos;
-    }
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         MinecraftServer server = MinecraftServer.init();
         instanceManager = MinecraftServer.getInstanceManager();
         AnvilLoader anvilLoader = new AnvilLoader("worlds/world");
-        Scanner scanner = new Scanner(System.in);
         instanceContainer = instanceManager.createInstanceContainer(anvilLoader);
         globalEventHandler = MinecraftServer.getGlobalEventHandler();
         scheduler = MinecraftServer.getSchedulerManager();
@@ -68,8 +57,9 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
         PermissionHandler.startHandler();
 
         PlayerDataHandler.start();
+        File confFile = new File("server.properties");
 
-        server.start("0.0.0.0", scanner.nextInt());
+        server.start("0.0.0.0", Integer.parseInt(Files.readString(confFile.toPath()).substring(5)));
         game = new BladeBall();
 
         scheduler.scheduleTask(() -> {
