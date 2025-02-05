@@ -7,6 +7,11 @@
     <groupId>io.bladeball</groupId>
     <artifactId>server</artifactId>
     <version>1.0</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>common</module>
+        <module>main</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -18,7 +23,7 @@
         <defaultGoal>clean package</defaultGoal>
         <resources>
             <resource>
-                <directory>${project.basedir}/src/main/resources</directory>
+                <directory>main/src/main/resources</directory>
                 <filtering>true</filtering>
             </resource>
         </resources>
@@ -38,6 +43,7 @@
                     <archive>
                         <manifest>
                             <mainClass>io.jadiefication.Nimoh</mainClass> <!--Change this to your main class-->
+                            <addClasspath>true</addClasspath>
                         </manifest>
                     </archive>
                     <descriptorRefs>
