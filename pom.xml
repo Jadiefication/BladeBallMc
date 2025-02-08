@@ -20,40 +20,44 @@
     </properties>
 
     <build>
-        <defaultGoal>clean package</defaultGoal>
-        <resources>
-            <resource>
-                <directory>main/src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
-                            <goal>single</goal> <!--Prevent dependecies from shading multiple times-->
+                            <goal>shade</goal>
                         </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>io.jadiefication.Nimoh</mainClass>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <finalName>server-${project.version}</finalName>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>io.jadiefication.Nimoh</mainClass> <!--Change this to your main class-->
-                            <addClasspath>true</addClasspath>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                    <appendAssemblyId>false</appendAssemblyId>
-                </configuration>
             </plugin>
         </plugins>
     </build>
+
+
+
 
     <dependencies>
         <dependency>
@@ -76,7 +80,7 @@
             <artifactId>slf4j-simple</artifactId>
             <version>2.0.16</version>
         </dependency>
-
     </dependencies>
+
 
 </project>
