@@ -3,8 +3,13 @@ package io.jadiefication.core.ball;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.core.ball.entity.BallEntity;
+import io.jadiefication.core.start.team.GameTeam;
+import io.jadiefication.core.start.team.TeamHandler;
+import io.jadiefication.core.vote.VoteGamemode;
+import io.jadiefication.core.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
 import io.jadiefication.permission.PermissionablePlayer;
+import net.jadiefication.stream.StreamExpander;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.advancements.FrameType;
@@ -31,6 +36,7 @@ import net.minestom.server.scoreboard.TeamManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -39,7 +45,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @Author Jade
  */
-public non-sealed class BladeBall implements BallHandler {
+public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandler {
 
     private static final double MAX_SPEED = 10.0;
     public static BallEntity entity;
@@ -73,13 +79,23 @@ public non-sealed class BladeBall implements BallHandler {
         BallState.dtCounter.cancel();
         BallState.dt = 0;
 
-        if (container.getPlayers().size() == 1) {
-            PermissionablePlayer player = (PermissionablePlayer) container.getPlayers().toArray()[0];
-            player.sendPacket(new SetTitleTextPacket(Component.text("Winner")));
-            player.sendNotification(winnerNotification);
-            player.currencyAmount += 20;
-            Nimoh.updateTask.cancel();
-            BallState.task.cancel();
+        if (Vote.gamemode.equals(VoteGamemode.TEAM)) {
+            if (TeamHandler.getInstance().isEmpty().isPresent()) {
+                GameTeam team = TeamHandler.getInstance().isEmpty().get();
+                GameTeam winner = TeamHandler.getInstance().getOpposingTeam(team);
+                PermissionablePlayer[] players = new PermissionablePlayer[winner.getPlayers().size()];
+                ((StreamExpander<PermissionablePlayer>) winner.getPlayers().stream()).forEachIndexed((player, index) -> {
+                    players[index] = player;
+                });
+                sendWin(players);
+            }
+        } else {
+            if (container.getPlayers().size() == 1) {
+                sendWin((PermissionablePlayer) container.getPlayers().toArray()[0]);
+                Nimoh.updateTask.cancel();
+                BallState.task.cancel();
+                VoteHandler.getInstance().restart();
+            }
         }
 
         if (!hasPlayer) {
@@ -135,6 +151,14 @@ public non-sealed class BladeBall implements BallHandler {
         }
     }
 
+    private static void sendWin(PermissionablePlayer... players) {
+        for (PermissionablePlayer player : players) {
+            player.sendPacket(new SetTitleTextPacket(Component.text("Winner")));
+            player.sendNotification(winnerNotification);
+            player.currencyAmount += 20;
+        }
+    }
+
 
     private static Vec getMovementVec(Player player) {
         try {
@@ -180,6 +204,10 @@ public non-sealed class BladeBall implements BallHandler {
 
         BallState.isActive = true;
         BallState.firstTarget = true;
+
+        if (Objects.equals(Vote.gamemode, VoteGamemode.TEAM)) {
+            TeamHandler.getInstance().start(container);
+        }
     }
 
     public boolean isPlayerAttached() {
@@ -200,6 +228,10 @@ public non-sealed class BladeBall implements BallHandler {
             homedUponPlayer = null; // Clear the player target
             hasPlayer = false; // Allow targeting another player
 
+        }
+
+        if (Vote.gamemode.equals(VoteGamemode.TEAM)) {
+            GameTeam.getTeam(target).removePlayer(target);
         }
 
         // Cancel all related tasks

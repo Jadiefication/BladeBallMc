@@ -15,8 +15,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.jadiefication.Nimoh.executorService;
-
 /**
  * Fuck ORMs
  *
@@ -29,7 +27,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     static void getCurrency(Player player) {
-        executorService.submit(() -> {
+        Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 PreparedStatement statement = connection.prepareStatement("SELECT currency FROM player_currency WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
@@ -45,7 +43,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     static void getData(Player player) {
-        executorService.submit(() -> {
+        Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 PreparedStatement statement = connection.prepareStatement("SELECT * FROM player_inventory WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
@@ -96,7 +94,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     static void updateData(Player player) {
-        executorService.submit(() ->{
+        Nimoh.executorService.submit(() ->{
             String uuid = player.getUuid().toString();
             AtomicInteger slot = new AtomicInteger();
             Arrays.stream(player.getInventory().getItemStacks()).forEach((item) -> {
@@ -173,7 +171,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     static void setCurrency(PermissionablePlayer player) {
-        executorService.submit(() -> {
+        Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 // First check if player exists
                 String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
