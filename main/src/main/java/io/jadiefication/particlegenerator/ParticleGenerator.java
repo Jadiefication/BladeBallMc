@@ -7,6 +7,7 @@ import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
+import net.minestom.server.scoreboard.Team;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
@@ -51,8 +52,50 @@ public class ParticleGenerator {
 
         players.forEach((key, value) -> {
             value.forEach(player -> {
-                particlePackets.get(key).forEach(particlePacket -> player.sendPacket(particlePacket));
+                particlePackets.get(key).forEach(player::sendPacket);
             });
+        });
+    }
+
+    private static void sendPacketsToSpecificTeams(Vec start, Vec end, Map<Particle, Team> players) {
+        int particles = 20;
+        ParticlePacket[] particleNormalPackets = new ParticlePacket[particles];
+        ParticlePacket[] particleOrangePackets = new ParticlePacket[particles];
+        for (int j = 0; j < particles; j++) {
+            double progress = (double) j / particles;
+            double x = start.x() + (end.x() - start.x()) * progress;
+            double z = start.z() + (end.z() - start.z()) * progress;
+            double y = start.y();
+
+            int finalJ = j;
+            players.forEach((key, value) -> {
+                ParticlePacket packet = new ParticlePacket(
+                        key,
+                        false,
+                        x, y, z,
+                        0f, 0f, 0f,
+                        0f,
+                        1
+                );
+                if (key.equals(Particle.WAX_ON)) {
+                    particleNormalPackets[finalJ] = packet;
+                } else {
+                    particleOrangePackets[finalJ] = packet;
+                }
+            });
+
+        }
+
+        players.forEach((key, value) -> {
+            if (key.equals(Particle.WAX_ON)) {
+                value.getPlayers().forEach(player ->
+                        player.sendPackets(particleNormalPackets)
+                );
+            } else {
+                value.getPlayers().forEach(player ->
+                        player.sendPackets(particleOrangePackets)
+                );
+            }
         });
     }
 
@@ -238,6 +281,29 @@ public class ParticleGenerator {
                 Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
 
                 sendPacketsToSpecificPlayers(vectors.getKey(), vectors.getValue(), players);
+            }
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
+
+        if (!Double.isInfinite(duration)) {
+            // Schedule task cancellation
+            scheduler.scheduleTask(() -> {
+                particleTask.cancel();
+                return TaskSchedule.nextTick();
+            }, TaskSchedule.seconds((long) duration));
+        }
+
+        return particleTask;
+    }
+
+    public static Task spawnSphereParticlesToTeams(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, Team> players, double duration) {
+        double phi = Math.PI * (3 - Math.sqrt(5));
+        int points = 200; // Adjust for desired density
+
+        Task particleTask = scheduler.scheduleTask(() -> {
+            for (int i = 0; i < points; i++) {
+                Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
+
+                sendPacketsToSpecificTeams(vectors.getKey(), vectors.getValue(), players);
             }
         }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 

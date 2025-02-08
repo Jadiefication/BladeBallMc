@@ -21,11 +21,8 @@ import net.minestom.server.timer.TaskSchedule;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +39,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
     public static InstanceManager instanceManager;
     public static final ExecutorService executorService = Executors.newCachedThreadPool();
     public static String url = "jdbc:sqlite:data/db/data.db";
+    public static boolean testing = false;
 
     public static void main(String[] args) throws IOException {
         MinecraftServer server = MinecraftServer.init();

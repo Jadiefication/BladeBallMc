@@ -2,15 +2,13 @@ package io.jadiefication.core.start.team;
 
 import io.jadiefication.core.Handler;
 import io.jadiefication.permission.PermissionablePlayer;
+import net.jadiefication.stream.StreamExpander;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.minestom.server.entity.Player;
 import net.minestom.server.entity.metadata.PlayerMeta;
 import net.minestom.server.instance.InstanceContainer;
-import net.jadiefication.stream.StreamExpander;
 
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 

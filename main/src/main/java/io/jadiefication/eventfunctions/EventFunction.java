@@ -1,16 +1,17 @@
 package io.jadiefication.eventfunctions;
 
 import io.jadiefication.AbilitiesHolder;
+import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.commands.debug.gui.DebugGui;
 import io.jadiefication.core.ball.BallHandler;
 import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
+import io.jadiefication.core.game.prestart.gui.AbilitySelectionMenu;
 import io.jadiefication.core.gui.Border;
 import io.jadiefication.core.item.SwordItems;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
-import io.jadiefication.core.game.prestart.gui.AbilitySelectionMenu;
 import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
@@ -35,8 +36,6 @@ import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static io.jadiefication.Nimoh.*;
 
 public abstract class EventFunction implements PlayerDataHandler {
 
@@ -63,10 +62,10 @@ public abstract class EventFunction implements PlayerDataHandler {
         PlayerDataHandler.getCurrency(player);
 
         // Set the spawning instance immediately in the main thread to avoid NullPointerException
-        event.setSpawningInstance(instanceContainer);
+        event.setSpawningInstance(Nimoh.instanceContainer);
 
         // Use a thread pool for better management of asynchronous tasks
-        executorService.submit(() -> {
+        Nimoh.executorService.submit(() -> {
             synchronized (player) {
                 // Perform asynchronous tasks like sending pack info and getting player data
                 Server.sendPackInfo(player);
@@ -89,7 +88,7 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onLeave(PlayerDisconnectEvent event) {
         final Player player = event.getPlayer();
-        if (BladeBall.isHomedUponPlayer(player)) game.hasPlayer = false;
+        if (BladeBall.isHomedUponPlayer(player)) Nimoh.game.hasPlayer = false;
         AbilitiesHolder.cooldownMap.remove(player.getUuid());
         PlayerDataHandler.setCurrency(((PermissionablePlayer) player));
         PlayerDataHandler.updateData(player);
@@ -175,6 +174,10 @@ public abstract class EventFunction implements PlayerDataHandler {
                 event.setCancelled(true);
             } else if (item.equals(DebugGui.createPerformanceCheckerItem())) {
                 CustomItem.getItemFunctionality(DebugGui.createPerformanceCheckerItem()).accept(event);
+            } else if (item.equals(ItemStack.builder(Material.REPEATING_COMMAND_BLOCK).build())) {
+                event.setCancelled(true);
+                player.sendMessage(Component.text("Testing enabled"));
+                Nimoh.testing = true;
             }
         }
         if (inventory instanceof AbilitySelectionMenu) {
@@ -222,10 +225,10 @@ public abstract class EventFunction implements PlayerDataHandler {
         if (event.getTarget().equals(BladeBall.entity) && (player.getItemInMainHand().equals(BladeBall.item) || CustomItemHolder.hasItem(player.getItemInMainHand()).isPresent() &&
                 !(AbilitiesHolder.isAbility(player.getItemInMainHand())))) {
             player.sendPacket(new SetCooldownPacket(String.valueOf(player.getItemInMainHand().material().id()), 1000));
-            game.setPlayerAttached(false);
+            Nimoh.game.setPlayerAttached(false);
             BallHandler.BallState.firstTarget = false;
             BallHandler.BallState.playerWhomHitTheBall = player;
-            game.multipleSpeed(0.1);
+            Nimoh.game.multipleSpeed(0.1);
         }
     }
 }

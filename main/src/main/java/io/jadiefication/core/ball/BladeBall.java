@@ -79,7 +79,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         BallState.dtCounter.cancel();
         BallState.dt = 0;
 
-        if (Vote.gamemode.equals(VoteGamemode.TEAM)) {
+        if (Vote.gamemode != null && Vote.gamemode.equals(VoteGamemode.TEAM)) {
             if (TeamHandler.getInstance().isEmpty().isPresent()) {
                 GameTeam team = TeamHandler.getInstance().isEmpty().get();
                 GameTeam winner = TeamHandler.getInstance().getOpposingTeam(team);
@@ -90,7 +90,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
                 sendWin(players);
             }
         } else {
-            if (container.getPlayers().size() == 1) {
+            if (container.getPlayers().size() == 1 && Nimoh.testing) {
                 sendWin((PermissionablePlayer) container.getPlayers().toArray()[0]);
                 Nimoh.updateTask.cancel();
                 BallState.task.cancel();
@@ -142,10 +142,10 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         synchronized (tasksLock) {
             // Clear existing tasks
             BallState.task.cancel();
-            BallState.task = ParticleGenerator.spawnSphereParticles(
+            BallState.task = ParticleGenerator.spawnSphereParticlesToTeams(
                     BallState.ballPosition,
                     0.5, 0.5, 0.5,
-                    Map.of(Particle.WAX_ON, targetList, Particle.WAX_OFF, otherList),
+                    Map.of(Particle.WAX_ON, target, Particle.WAX_OFF, other),
                     1.0
             );
         }
@@ -230,7 +230,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
         }
 
-        if (Vote.gamemode.equals(VoteGamemode.TEAM)) {
+        if (Vote.gamemode != null && Vote.gamemode.equals(VoteGamemode.TEAM)) {
             GameTeam.getTeam(target).removePlayer(target);
         }
 

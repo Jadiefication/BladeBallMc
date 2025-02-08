@@ -82,7 +82,7 @@ public class DebugGui extends Inventory {
 
     public DebugGui() {
         super(InventoryType.CHEST_6_ROW, Component.text("Debug Inventory"));
-        List<Material> items = List.of(Material.BARRIER, Material.COMMAND_BLOCK, Material.STRUCTURE_VOID, Material.LIGHT);
+        List<Material> items = List.of(Material.BARRIER, Material.COMMAND_BLOCK, Material.STRUCTURE_VOID, Material.LIGHT, Material.REPEATING_COMMAND_BLOCK);
         Border.setInventoryBorder(this);
         setItemStack(40, createPerformanceCheckerItem());
         for (int i = 0; i < items.size(); i++) {

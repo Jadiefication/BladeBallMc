@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component;
 import net.minestom.server.entity.Player;
 
 import java.util.List;
-import java.util.Map;
 
 public class GameTeam {
 
