@@ -1,5 +1,6 @@
 package io.jadiefication;
 
+import io.jadiefication.core.ball.BallHandler;
 import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
 import io.jadiefication.permission.PermissionHandler;
@@ -44,6 +45,9 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
     public static void main(String[] args) throws IOException {
         MinecraftServer server = MinecraftServer.init();
         instanceManager = MinecraftServer.getInstanceManager();
+        if (new File("worlds").exists()) {
+            Files.move(new File("worlds").toPath(), new File("data/worlds").toPath());
+        }
         AnvilLoader anvilLoader = new AnvilLoader("data/worlds/world");
         instanceContainer = instanceManager.createInstanceContainer(anvilLoader);
         globalEventHandler = MinecraftServer.getGlobalEventHandler();
@@ -76,7 +80,10 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
         PlayerDataHandler.start();
         File confFile = new File("server.properties");
 
-        server.start("0.0.0.0", Integer.parseInt(Files.readString(confFile.toPath()).substring(5)));
+        String config = Files.readString(confFile.toPath());
+        int port = Integer.parseInt(config.split("port=")[1].split("\n")[0]);
+
+        server.start("0.0.0.0", port);
         game = new BladeBall();
 
         scheduler.scheduleTask(() -> {
@@ -99,6 +106,30 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
 
                     if (AbilitiesHolder.cooldownMap.containsKey(player.getUuid())) {
                         player.sendPacket(new SetExperiencePacket(percentage, (int) newTime, 0));
+                    }
+                }
+            }
+        }, TaskSchedule.seconds(1), TaskSchedule.seconds(1));
+
+        scheduler.scheduleTask(() -> {
+            Iterator<Map.Entry<Player, Integer>> iterator = BladeBall.shieldCooldown.entrySet().iterator();
+
+            while (iterator.hasNext()) {
+                Map.Entry<Player, Integer> entry = iterator.next();
+                Player player = entry.getKey();
+                int newTime = entry.getValue() - 1;
+                float percentage = (float) newTime / 30; // Assuming max cooldown is 30 seconds
+
+                if (player != null) {
+                    if (newTime <= 0) {
+                        iterator.remove(); // Safe removal from the map
+                        player.sendPacket(new SetExperiencePacket(0, 0, 0));
+                    } else {
+                        entry.setValue(newTime); // Update the current value
+                    }
+
+                    if (BladeBall.shieldCooldown.containsKey(player)) {
+                        player.sendPacket(new SetExperiencePacket(percentage, newTime, 0));
                     }
                 }
             }

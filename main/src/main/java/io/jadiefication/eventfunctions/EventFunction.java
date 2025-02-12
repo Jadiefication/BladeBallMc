@@ -24,6 +24,7 @@ import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
+import net.minestom.server.event.item.PlayerBeginItemUseEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.block.Block;
@@ -90,6 +91,7 @@ public abstract class EventFunction implements PlayerDataHandler {
         final Player player = event.getPlayer();
         if (BladeBall.isHomedUponPlayer(player)) Nimoh.game.hasPlayer = false;
         AbilitiesHolder.cooldownMap.remove(player.getUuid());
+        BladeBall.shieldCooldown.remove(player);
         PlayerDataHandler.setCurrency(((PermissionablePlayer) player));
         PlayerDataHandler.updateData(player);
     }
@@ -222,13 +224,25 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onBallHit(EntityAttackEvent event) {
         Player player = (Player) event.getEntity();
-        if (event.getTarget().equals(BladeBall.entity) && (player.getItemInMainHand().equals(BladeBall.item) || CustomItemHolder.hasItem(player.getItemInMainHand()).isPresent() &&
-                !(AbilitiesHolder.isAbility(player.getItemInMainHand())))) {
+        if (event.getTarget().equals(BladeBall.entity) && player.getItemInMainHand().equals(BladeBall.item)) {
             player.sendPacket(new SetCooldownPacket(String.valueOf(player.getItemInMainHand().material().id()), 1000));
             Nimoh.game.setPlayerAttached(false);
             BallHandler.BallState.firstTarget = false;
             BallHandler.BallState.playerWhomHitTheBall = player;
             Nimoh.game.multipleSpeed(0.1);
         }
+    }
+
+    public static void onItemUse(PlayerBeginItemUseEvent event) {
+        Player player = event.getPlayer();
+        if (BladeBall.shieldCooldown.containsKey(player)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        BladeBall.shieldCooldown.put(player, 2);
+
+
+        //if (player.equals(BallHandler.BallState.playerWhomHitTheBall) && )
     }
 }

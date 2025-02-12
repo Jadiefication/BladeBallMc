@@ -11,8 +11,8 @@ import java.util.List;
 public class PermissionablePlayer extends Player {
 
     private final List<PermissionableGroup> groups = new ArrayList<>();
-    public boolean hasProfilerOn = false;
     public int currencyAmount = 0;
+    public int winAmount = 0;
 
     public PermissionablePlayer(@NotNull PlayerConnection playerConnection, @NotNull GameProfile gameProfile) {
         super(playerConnection, gameProfile);
@@ -35,12 +35,8 @@ public class PermissionablePlayer extends Player {
     }
 
     public boolean hasPermission(Permission permission) {
-        if (getPlayerPermissions().contains(permission) || this.asPlayer().getPermissionLevel() == 4
-                || this.groups.stream().anyMatch(group -> PermissionHandler.getPermissions(group).contains(permission))) {
-            return true;
-        } else {
-            return false;
-        }
+        return getPlayerPermissions().contains(permission) || this.asPlayer().getPermissionLevel() == 4
+                || this.groups.stream().anyMatch(group -> PermissionHandler.getPermissions(group).contains(permission));
     }
 
     public List<Permission> getPlayerPermissions() {

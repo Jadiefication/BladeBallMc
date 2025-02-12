@@ -42,6 +42,22 @@ public interface PlayerDataHandler extends Handler {
         });
     }
 
+    static void getWins(Player player) {
+        Nimoh.executorService.submit(() -> {
+            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+                PreparedStatement statement = connection.prepareStatement("SELECT wins FROM player_currency WHERE player_uuid = ?");
+                statement.setString(1, player.getUuid().toString());
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    ((PermissionablePlayer) player).winAmount = resultSet.getInt("wins");
+                } finally {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     static void getData(Player player) {
         Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
@@ -120,17 +136,18 @@ public interface PlayerDataHandler extends Handler {
                     customlore TEXT
                 )
             """;
-            String createPlayerCoinTable = """
+            String createPlayerStatsTable = """
                     CREATE TABLE IF NOT EXISTS player_currency (
                       id INTEGER PRIMARY KEY AUTOINCREMENT,
                       player_uuid TEXT NOT NULL,
-                      currency INTEGER
+                      currency INTEGER,
+                      wins INTEGER
                     )
                     """;
 
             try (Statement statement = connection.createStatement()) {
                 statement.execute(createPlayerTable);
-                statement.execute(createPlayerCoinTable);
+                statement.execute(createPlayerStatsTable);
             } finally {
                 connection.close();
             }
@@ -205,7 +222,40 @@ public interface PlayerDataHandler extends Handler {
         });
     }
 
-
+    static void setWins(PermissionablePlayer player) {
+        Nimoh.executorService.submit(() -> {
+            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+                // First check if player exists
+                String checkQuery = "SELECT COUNT(*) FROM wins WHERE player_uuid = ?";
+                try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
+                    checkStatement.setString(1, player.getUuid().toString());
+                    ResultSet rs = checkStatement.executeQuery();
+                    rs.next();
+                    if (rs.getInt(1) > 0) {
+                        // Update existing player
+                        PreparedStatement updateStatement = connection.prepareStatement(
+                                "UPDATE player_currency SET wins = ? WHERE player_uuid = ?"
+                        );
+                        updateStatement.setInt(1, player.winAmount);
+                        updateStatement.setString(2, player.getUuid().toString());
+                        updateStatement.executeUpdate();
+                    } else {
+                        // Insert new player
+                        PreparedStatement insertStatement = connection.prepareStatement(
+                                "INSERT INTO player_currency (player_uuid, wins) VALUES (?, ?)"
+                        );
+                        insertStatement.setString(1, player.getUuid().toString());
+                        insertStatement.setInt(2, player.winAmount);
+                        insertStatement.executeUpdate();
+                    }
+                } finally {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     private static void prepareStatements(String uuid, int slot, ItemStack item, PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setString(1, uuid);

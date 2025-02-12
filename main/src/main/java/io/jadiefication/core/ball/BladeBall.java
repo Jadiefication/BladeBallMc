@@ -24,6 +24,8 @@ import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.UseCooldown;
+import net.minestom.server.network.packet.server.SendablePacket;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.network.packet.server.play.SetTitleTextPacket;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
 import net.minestom.server.particle.Particle;
@@ -33,10 +35,7 @@ import net.minestom.server.scoreboard.Team;
 import net.minestom.server.scoreboard.TeamBuilder;
 import net.minestom.server.scoreboard.TeamManager;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -71,6 +70,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
     private static final List<Player> targetList = new ArrayList<>();
     private static List<Player> otherList = new ArrayList<>();
     private static final Notification winnerNotification = new Notification(Component.text("You gained 20 Coins", NamedTextColor.GOLD), FrameType.CHALLENGE, Server.coin);
+    public static final Map<Player, Integer> shieldCooldown = new HashMap<>();
 
     @Override
     public void update(InstanceContainer container) {
@@ -153,9 +153,11 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
     private static void sendWin(PermissionablePlayer... players) {
         for (PermissionablePlayer player : players) {
-            player.sendPacket(new SetTitleTextPacket(Component.text("Winner")));
+            player.sendPackets(new SetTitleTextPacket(Component.text("Winner")), new ParticlePacket(Particle.TOTEM_OF_UNDYING,
+                    player.getPosition(), Pos.ZERO, 0, 1));
             player.sendNotification(winnerNotification);
             player.currencyAmount += 20;
+            player.winAmount++;
         }
     }
 

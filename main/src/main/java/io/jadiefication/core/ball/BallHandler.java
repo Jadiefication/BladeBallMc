@@ -12,6 +12,7 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.InstanceContainer;
+import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
@@ -57,6 +58,8 @@ public sealed interface BallHandler extends Handler permits BladeBall {
 
         Player blockingPlayer = BallState.playerWhomHitTheBall;
         if (blockingPlayer != null) {
+            BallState.playerWhomHitTheBall.sendPacket(new ParticlePacket(Particle.TOTEM_OF_UNDYING,
+                    BallState.playerWhomHitTheBall.getPosition(), Pos.ZERO, 0, 1));
             Vec start = blockingPlayer.getPosition().asVec();
             Vec directionVec = blockingPlayer.getPosition().direction();
 
