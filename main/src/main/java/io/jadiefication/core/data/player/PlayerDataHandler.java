@@ -26,7 +26,7 @@ public interface PlayerDataHandler extends Handler {
         startDatabase();
     }
 
-    static void getCurrency(Player player) {
+    private static void getCurrency(Player player) {
         Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 PreparedStatement statement = connection.prepareStatement("SELECT currency FROM player_currency WHERE player_uuid = ?");
@@ -42,7 +42,7 @@ public interface PlayerDataHandler extends Handler {
         });
     }
 
-    static void getWins(Player player) {
+    private static void getWins(Player player) {
         Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 PreparedStatement statement = connection.prepareStatement("SELECT wins FROM player_currency WHERE player_uuid = ?");
@@ -60,6 +60,8 @@ public interface PlayerDataHandler extends Handler {
 
     static void getData(Player player) {
         Nimoh.executorService.submit(() -> {
+            getWins(player);
+            getCurrency(player);
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 PreparedStatement statement = connection.prepareStatement("SELECT * FROM player_inventory WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
@@ -111,6 +113,8 @@ public interface PlayerDataHandler extends Handler {
 
     static void updateData(Player player) {
         Nimoh.executorService.submit(() ->{
+            setWins(((PermissionablePlayer) player));
+            setCurrency(((PermissionablePlayer) player));
             String uuid = player.getUuid().toString();
             AtomicInteger slot = new AtomicInteger();
             Arrays.stream(player.getInventory().getItemStacks()).forEach((item) -> {
@@ -187,7 +191,7 @@ public interface PlayerDataHandler extends Handler {
         }
     }
 
-    static void setCurrency(PermissionablePlayer player) {
+    private static void setCurrency(PermissionablePlayer player) {
         Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 // First check if player exists
@@ -222,11 +226,11 @@ public interface PlayerDataHandler extends Handler {
         });
     }
 
-    static void setWins(PermissionablePlayer player) {
+    private static void setWins(PermissionablePlayer player) {
         Nimoh.executorService.submit(() -> {
             try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
                 // First check if player exists
-                String checkQuery = "SELECT COUNT(*) FROM wins WHERE player_uuid = ?";
+                String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
                 try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
                     checkStatement.setString(1, player.getUuid().toString());
                     ResultSet rs = checkStatement.executeQuery();

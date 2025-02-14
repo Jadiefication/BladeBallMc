@@ -15,11 +15,13 @@ import net.minestom.server.MinecraftServer;
 import net.minestom.server.command.CommandManager;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
+import net.minestom.server.event.Event;
 import net.minestom.server.event.GlobalEventHandler;
 import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
+import net.minestom.server.event.item.PlayerBeginItemUseEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
 import net.minestom.server.instance.Instance;
@@ -29,6 +31,8 @@ import net.minestom.server.item.Material;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public sealed interface Server permits Nimoh {
 
@@ -74,18 +78,22 @@ public sealed interface Server permits Nimoh {
     }
 
     static void implementListeners(GlobalEventHandler handler) {
-        handler.addListener(AsyncPlayerConfigurationEvent.class, EventFunction::onJoin);
-        handler.addListener(PlayerBlockBreakEvent.class, EventFunction::onBreak);
-        handler.addListener(PlayerUseItemEvent.class, EventFunction::onUse);
-        handler.addListener(PlayerBlockPlaceEvent.class, EventFunction::onPlace);
-        handler.addListener(ServerListPingEvent.class, EventFunction::onPing);
-        handler.addListener(InventoryPreClickEvent.class, EventFunction::onInventoryClick);
-        handler.addListener(PlayerDisconnectEvent.class, EventFunction::onLeave);
-        handler.addListener(EntityAttackEvent.class, EventFunction::onBallHit);
-        handler.addListener(InventoryOpenEvent.class, EventFunction::onInventoryOpen);
-        handler.addListener(PlayerUseItemEvent.class, EventFunction::onItemUse);
-        handler.addListener(PlayerSpawnEvent.class, EventFunction::onWorldJoin);
-        handler.addListener(InventoryCloseEvent.class, EventFunction::onInventoryClose);
+        Map<Class<? extends Event>, Consumer<? extends Event>> events = Map.ofEntries(
+                Map.entry(AsyncPlayerConfigurationEvent.class, (Consumer<AsyncPlayerConfigurationEvent>) EventFunction::onJoin),
+                Map.entry(PlayerBlockBreakEvent.class, (Consumer<PlayerBlockBreakEvent>) EventFunction::onBreak),
+                Map.entry(PlayerBlockPlaceEvent.class, (Consumer<PlayerBlockPlaceEvent>) EventFunction::onPlace),
+                Map.entry(ServerListPingEvent.class, (Consumer<ServerListPingEvent>) EventFunction::onPing),
+                Map.entry(InventoryPreClickEvent.class, (Consumer<InventoryPreClickEvent>) EventFunction::onInventoryClick),
+                Map.entry(PlayerUseItemEvent.class, (Consumer<PlayerUseItemEvent>) EventFunction::onItemUse),
+                Map.entry(PlayerDisconnectEvent.class, (Consumer<PlayerDisconnectEvent>) EventFunction::onLeave),
+                Map.entry(InventoryOpenEvent.class, (Consumer<InventoryOpenEvent>) EventFunction::onInventoryOpen),
+                Map.entry(PlayerSpawnEvent.class, (Consumer<PlayerSpawnEvent>) EventFunction::onWorldJoin),
+                Map.entry(InventoryCloseEvent.class, (Consumer<InventoryCloseEvent>) EventFunction::onInventoryClose),
+                Map.entry(PlayerBeginItemUseEvent.class, (Consumer<PlayerBeginItemUseEvent>) EventFunction::onItemBlock)
+        );
 
+        for (Map.Entry<Class<? extends Event>, Consumer<? extends Event>> entry : events.entrySet()) {
+            handler.addListener(entry.getKey(), (Consumer) entry.getValue());
+        }
     }
 }

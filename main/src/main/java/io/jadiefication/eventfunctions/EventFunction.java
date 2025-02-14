@@ -33,6 +33,7 @@ import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.network.packet.server.play.SetCooldownPacket;
+import net.minestom.server.timer.TaskSchedule;
 
 import java.util.List;
 import java.util.Objects;
@@ -51,16 +52,8 @@ public abstract class EventFunction implements PlayerDataHandler {
         }
     }
 
-    public static void onUse(PlayerUseItemEvent event) {
-        ItemStack item = event.getItemStack();
-        if (CustomItem.getItemMap().containsKey(item) && ((PermissionablePlayer) event.getPlayer()).hasPermission(Permission.USE_CUSTOM_ITEM)) {
-            CustomItem.getItemFunctionality(item).accept(event);
-        }
-    }
-
     public static void onJoin(AsyncPlayerConfigurationEvent event) {
         final PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
-        PlayerDataHandler.getCurrency(player);
 
         // Set the spawning instance immediately in the main thread to avoid NullPointerException
         event.setSpawningInstance(Nimoh.instanceContainer);
@@ -92,7 +85,6 @@ public abstract class EventFunction implements PlayerDataHandler {
         if (BladeBall.isHomedUponPlayer(player)) Nimoh.game.hasPlayer = false;
         AbilitiesHolder.cooldownMap.remove(player.getUuid());
         BladeBall.shieldCooldown.remove(player);
-        PlayerDataHandler.setCurrency(((PermissionablePlayer) player));
         PlayerDataHandler.updateData(player);
     }
 
@@ -161,7 +153,7 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onItemUse(PlayerUseItemEvent event) {
         ItemStack item = event.getItemStack();
-        if (CustomItem.getItems().contains(item)) {
+        if (CustomItem.getItems().contains(item) && ((PermissionablePlayer) event.getPlayer()).hasPermission(Permission.USE_CUSTOM_ITEM)) {
             CustomItem.getItemFunctionality(item).accept(event);
         }
     }
@@ -222,27 +214,40 @@ public abstract class EventFunction implements PlayerDataHandler {
         }
     }
 
-    public static void onBallHit(EntityAttackEvent event) {
-        Player player = (Player) event.getEntity();
-        if (event.getTarget().equals(BladeBall.entity) && player.getItemInMainHand().equals(BladeBall.item)) {
-            player.sendPacket(new SetCooldownPacket(String.valueOf(player.getItemInMainHand().material().id()), 1000));
-            Nimoh.game.setPlayerAttached(false);
-            BallHandler.BallState.firstTarget = false;
-            BallHandler.BallState.playerWhomHitTheBall = player;
-            Nimoh.game.multipleSpeed(0.1);
-        }
-    }
-
-    public static void onItemUse(PlayerBeginItemUseEvent event) {
+    public static void onItemBlock(PlayerBeginItemUseEvent event) {
         Player player = event.getPlayer();
-        if (BladeBall.shieldCooldown.containsKey(player)) {
-            event.setCancelled(true);
-            return;
+        // Check if the item is a shield by comparing its material.
+        if (event.getItemStack().material() == Material.SHIELD) {
+            // If on cooldown, cancel the event.
+            if (BladeBall.shieldCooldown.containsKey(player)) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (BladeBall.isHomedUponPlayer(player)) {
+                Nimoh.game.setPlayerAttached(false);
+                BallHandler.BallState.firstTarget = false;
+                BallHandler.BallState.playerWhomHitTheBall = player;
+                Nimoh.game.multipleSpeed(0.1);
+            }
+
+            // Immediately send a cooldown packet so the client shows the cooldown.
+            player.sendPacket(new SetCooldownPacket(String.valueOf(Material.SHIELD.id()), 40));
+            // Mark the player as on cooldown.
+            BladeBall.shieldCooldown.put(player, 2);
+
+            // Optionally, restore the shield after the cooldown has ended.
+            Nimoh.scheduler.buildTask(() -> {
+                // Store the shield item and remove it to force cancel usage.
+                ItemStack shieldItem = event.getItemStack();
+                player.setItemInMainHand(ItemStack.AIR);
+                Nimoh.scheduler.buildTask(() -> {
+                    // Store the shield item and remove it to force cancel usage.
+                    player.setItemInMainHand(shieldItem);
+                }).delay(TaskSchedule.tick(5)).schedule();
+            }).delay(TaskSchedule.tick(30)).schedule();
         }
-
-        BladeBall.shieldCooldown.put(player, 2);
-
-
-        //if (player.equals(BallHandler.BallState.playerWhomHitTheBall) && )
     }
+
+
 }

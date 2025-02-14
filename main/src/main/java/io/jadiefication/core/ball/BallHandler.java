@@ -58,8 +58,6 @@ public sealed interface BallHandler extends Handler permits BladeBall {
 
         Player blockingPlayer = BallState.playerWhomHitTheBall;
         if (blockingPlayer != null) {
-            BallState.playerWhomHitTheBall.sendPacket(new ParticlePacket(Particle.TOTEM_OF_UNDYING,
-                    BallState.playerWhomHitTheBall.getPosition(), Pos.ZERO, 0, 1));
             Vec start = blockingPlayer.getPosition().asVec();
             Vec directionVec = blockingPlayer.getPosition().direction();
 
