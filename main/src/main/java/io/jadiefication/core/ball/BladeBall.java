@@ -222,8 +222,10 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
     private void handleCollision(InstanceContainer container, Player target) {
         //ParticleGenerator.spawnCircleParticles()
-        BallState.playerWhomHitTheBall.sendPacket(new ParticlePacket(Particle.TOTEM_OF_UNDYING,
-                BallState.playerWhomHitTheBall.getPosition(), Pos.ZERO, 0, 1));
+        if (BallState.playerWhomHitTheBall != null) {
+            BallState.playerWhomHitTheBall.sendPacket(new ParticlePacket(Particle.TOTEM_OF_UNDYING,
+                    BallState.playerWhomHitTheBall.getPosition(), Pos.ZERO, 0, 1));
+        }
         target.setGameMode(GameMode.SPECTATOR); // Send player to spectator mode
         ParticleGenerator.spawnCircleParticles(
                 container, target.getPosition(), 0.5, 0.5, Particle.ITEM_SNOWBALL, 1

@@ -1,0 +1,55 @@
+name: Discord Webhook
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, closed]
+  issues:
+    types: [opened, closed]
+
+jobs:
+  discord_notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Webhook to Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{
+                "username": "GitHub",
+                "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+                "embeds": [{
+                  "title": "📌 New GitHub Event",
+                  "url": "https://github.com/${{ github.repository }}/actions",
+                  "color": 7506394,
+                  "fields": [
+                    {
+                      "name": "🔹 Repository",
+                      "value": "[${{ github.repository }}](https://github.com/${{ github.repository }})",
+                      "inline": false
+                    },
+                    {
+                      "name": "👤 Author",
+                      "value": "${{ github.actor }}",
+                      "inline": true
+                    },
+                    {
+                      "name": "📖 Event",
+                      "value": "${{ github.event_name }}",
+                      "inline": true
+                    },
+                    {
+                      "name": "📜 Commit Message",
+                      "value": "${{ github.event.head_commit.message || 'N/A' }}",
+                      "inline": false
+                    }
+                  ],
+                  "footer": {
+                    "text": "GitHub Actions • $(date +%Y-%m-%d)"
+                  },
+                  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+                }]
+              }' $DISCORD_WEBHOOK_URL

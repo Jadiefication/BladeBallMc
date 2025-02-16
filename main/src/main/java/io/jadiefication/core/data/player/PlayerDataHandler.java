@@ -1,5 +1,7 @@
 package io.jadiefication.core.data.player;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import io.jadiefication.Nimoh;
 import io.jadiefication.core.Handler;
 import io.jadiefication.customitem.CustomItemHolder;
@@ -23,12 +25,18 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface PlayerDataHandler extends Handler {
 
     static void start() {
+        Config.config.setJdbcUrl(Nimoh.url);
+        Config.config.setMaximumPoolSize(10);
+        Config.config.setMinimumIdle(5);
+        Config.config.setIdleTimeout(300000);
+        Config.config.setMaxLifetime(600000);
+        Config.dataSource = new HikariDataSource(Config.config);
         startDatabase();
     }
 
     private static void getCurrency(Player player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+            try (Connection connection = Config.dataSource.getConnection()) {
                 PreparedStatement statement = connection.prepareStatement("SELECT currency FROM player_currency WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
                 try (ResultSet resultSet = statement.executeQuery()) {
@@ -44,7 +52,7 @@ public interface PlayerDataHandler extends Handler {
 
     private static void getWins(Player player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+            try (Connection connection = Config.dataSource.getConnection()) {
                 PreparedStatement statement = connection.prepareStatement("SELECT wins FROM player_currency WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
                 try (ResultSet resultSet = statement.executeQuery()) {
@@ -62,7 +70,7 @@ public interface PlayerDataHandler extends Handler {
         Nimoh.executorService.submit(() -> {
             getWins(player);
             getCurrency(player);
-            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+            try (Connection connection = Config.dataSource.getConnection()) {
                 PreparedStatement statement = connection.prepareStatement("SELECT * FROM player_inventory WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
 
@@ -127,7 +135,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     private static void startDatabase() {
-        try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+        try (Connection connection = Config.dataSource.getConnection()) {
             // Create the tables if they do not exist
             String createPlayerTable = """
                 CREATE TABLE IF NOT EXISTS player_inventory (
@@ -161,7 +169,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     private static void setPlayerData(String uuid, int slot, ItemStack item) {
-        try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+        try (Connection connection = Config.dataSource.getConnection()) {
             // Check if the row already exists
             String checkQuery = "SELECT COUNT(*) FROM player_inventory WHERE player_uuid = ? AND slot = ?";
             try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
@@ -193,7 +201,7 @@ public interface PlayerDataHandler extends Handler {
 
     private static void setCurrency(PermissionablePlayer player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+            try (Connection connection = Config.dataSource.getConnection()) {
                 // First check if player exists
                 String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
                 try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
@@ -228,7 +236,7 @@ public interface PlayerDataHandler extends Handler {
 
     private static void setWins(PermissionablePlayer player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
+            try (Connection connection = Config.dataSource.getConnection()) {
                 // First check if player exists
                 String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
                 try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
@@ -291,4 +299,8 @@ public interface PlayerDataHandler extends Handler {
         preparedStatement.executeUpdate();
     }
 
+    class Config {
+        public static HikariConfig config = new HikariConfig();
+        public static HikariDataSource dataSource;
+    }
 }

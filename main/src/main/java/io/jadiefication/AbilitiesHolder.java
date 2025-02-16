@@ -13,6 +13,8 @@ import net.minestom.server.item.Material;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public interface AbilitiesHolder {
 
     Map<UUID, Long> cooldownMap = new HashMap<>();
+    long cooldown = Long.parseLong(Nimoh.config.split("cooldown=")[1].split("\n")[0]);
 
     ItemStack dash = CustomItem.registerItem(Component.text("§8§lDash ability"), List.of(Component.text("Use this ability to dash forward")),
             Material.BLACK_STAINED_GLASS_PANE, 1, event -> {
@@ -33,24 +36,6 @@ public interface AbilitiesHolder {
                     Vec direction = pos.direction().normalize();
                     Vec movement = direction.mul(48);
 
-                    /*Pos addedPos = pos; // Start from the player's current position
-                    Vec step = movement.div(4); // Divide movement into smaller steps
-
-                    // Iterate 4 times for the 4 steps
-                    for (int i = 0; i < 4; i++) {
-                        // Update the next position step by step
-                        addedPos = addedPos.add(step);
-
-                        // Check for collision at current step
-                        Block block = Nimoh.instanceContainer.getBlock(addedPos);
-                        if (block != Block.AIR) {
-                            // If collision happens, stop further movement
-                            addedPos = addedPos.sub(step); // Go back one step
-                            break; // Break out of the loop since movement is blocked
-                        }
-                    }
-
-                    Pos finalAddedPos = addedPos;*/
                     Pos placeWhereWeWillGo = pos.add(movement);
                     player.setVelocity(movement);
 
@@ -62,7 +47,7 @@ public interface AbilitiesHolder {
                         }
                     }, TaskSchedule.millis(10), TaskSchedule.millis(10)); // Tasks repeat regularly
 
-                    cooldownMap.put(player.getUuid(), 30L);
+                    cooldownMap.put(player.getUuid(), cooldown);
                 }
     });
 
@@ -84,7 +69,7 @@ public interface AbilitiesHolder {
                         }
                     }, TaskSchedule.millis(10), TaskSchedule.millis(10)); // Tasks repeat regularly
 
-                    cooldownMap.put(player.getUuid(), 30L);
+                    cooldownMap.put(player.getUuid(), cooldown);
                 }
     });
 
@@ -132,7 +117,7 @@ public interface AbilitiesHolder {
                     taskReference.set(task);
                     taskRevertReference.set(revertTask);
 
-                    cooldownMap.put(player.getUuid(), 30L);
+                    cooldownMap.put(player.getUuid(), cooldown);
                 }
             });
 

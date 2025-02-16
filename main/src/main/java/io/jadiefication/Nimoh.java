@@ -41,6 +41,16 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
     public static final ExecutorService executorService = Executors.newCachedThreadPool();
     public static String url = "jdbc:sqlite:data/db/data.db";
     public static boolean testing = false;
+    public static File confFile = new File("server.properties");
+    public static String config;
+
+    static {
+        try {
+            config = Files.readString(confFile.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static void main(String[] args) throws IOException {
         MinecraftServer server = MinecraftServer.init();
@@ -78,9 +88,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
         PermissionHandler.startHandler();
 
         PlayerDataHandler.start();
-        File confFile = new File("server.properties");
 
-        String config = Files.readString(confFile.toPath());
         int port = Integer.parseInt(config.split("port=")[1].split("\n")[0]);
 
         server.start("0.0.0.0", port);
@@ -93,7 +101,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
                 Map.Entry<UUID, Long> entry = iterator.next();
                 UUID uuid = entry.getKey();
                 long newTime = entry.getValue() - 1;
-                float percentage = (float) newTime / 30; // Assuming max cooldown is 30 seconds
+                float percentage = (float) newTime / cooldown; // Assuming max cooldown is 30 seconds
                 Player player = MinecraftServer.getConnectionManager().getOnlinePlayerByUuid(uuid);
 
                 if (player != null) {

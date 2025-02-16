@@ -47,7 +47,7 @@ public class GameTeam {
         this.players = null;
     }
 
-    public static boolean areOnSameTeam(Player player1, Player player2) {
+    public static boolean areOnSameTeam(PermissionablePlayer player1, PermissionablePlayer player2) {
         return playersToTeam.hasListValue(player1) && playersToTeam.hasListValue(player2);
     }
 

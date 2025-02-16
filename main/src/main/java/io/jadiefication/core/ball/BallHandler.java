@@ -6,6 +6,7 @@ import io.jadiefication.core.start.team.GameTeam;
 import io.jadiefication.core.vote.VoteGamemode;
 import io.jadiefication.core.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -67,7 +68,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
 
             for (Player player : container.getPlayers()) {
                 if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR) ||
-                        (GameTeam.areOnSameTeam(blockingPlayer, player) && VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM))) continue;
+                        (VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM)) && GameTeam.areOnSameTeam((PermissionablePlayer) blockingPlayer, (PermissionablePlayer) player)) continue;
 
                 // Calculate player AABB (similar to before)
                 Pos playerPos = player.getPosition();
@@ -116,7 +117,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
             if (!foundPlayerInRay) {
                 for (Player player : container.getPlayers()) {
                     if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR) ||
-                            (GameTeam.areOnSameTeam(blockingPlayer, player) && VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM))) continue;
+                            (GameTeam.areOnSameTeam((PermissionablePlayer) blockingPlayer, (PermissionablePlayer) player) && VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM))) continue;
 
                     Vec playerPos = player.getPosition().asVec();
 
