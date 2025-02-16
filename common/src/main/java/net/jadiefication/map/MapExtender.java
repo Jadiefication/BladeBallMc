@@ -1,5 +1,6 @@
 package net.jadiefication.map;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,13 @@ public interface MapExtender<K, V> extends Map<K, V> {
         return atomicValue.get();
     }
 
+    default List<V> getValues() {
+        List<V> values = new ArrayList<>();
+        forEach((key, value) -> values.add(value));
+
+        return values;
+    }
+
     default K getKeyByListValue(Object object) {
         if (hasListValue(object)) {
             AtomicReference<List<?>> correctValue = new AtomicReference<>();
@@ -50,5 +58,12 @@ public interface MapExtender<K, V> extends Map<K, V> {
         } else {
             return null;
         }
+    }
+
+    default List<K> getKeys() {
+        List<K> values = new ArrayList<>();
+        forEach((key, value) -> values.add(key));
+
+        return values;
     }
 }

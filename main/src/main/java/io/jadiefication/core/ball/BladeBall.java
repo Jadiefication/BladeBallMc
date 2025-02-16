@@ -142,9 +142,8 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         synchronized (tasksLock) {
             // Clear existing tasks
             BallState.task.cancel();
-            BallState.task = ParticleGenerator.spawnSphereParticlesToTeams(
+            BallState.task = ParticleGenerator.spawnBladeBall(
                     BallState.ballPosition,
-                    0.5, 0.5, 0.5,
                     Map.of(Particle.WAX_ON, target, Particle.WAX_OFF, other),
                     1.0
             );
