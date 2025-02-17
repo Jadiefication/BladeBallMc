@@ -8,12 +8,16 @@ import io.jadiefication.core.start.team.TeamHandler;
 import io.jadiefication.core.vote.VoteGamemode;
 import io.jadiefication.core.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
+import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.permission.PermissionablePlayer;
+import net.jadiefication.map.HashMapExtender;
+import net.jadiefication.map.MapExtender;
 import net.jadiefication.stream.StreamExpander;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.minestom.server.advancements.FrameType;
 import net.minestom.server.advancements.Notification;
+import net.minestom.server.adventure.audience.PacketGroupingAudience;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
@@ -24,7 +28,6 @@ import net.minestom.server.item.ItemComponent;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 import net.minestom.server.item.component.UseCooldown;
-import net.minestom.server.network.packet.server.SendablePacket;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.network.packet.server.play.SetTitleTextPacket;
 import net.minestom.server.network.packet.server.play.TeamsPacket;
@@ -138,13 +141,16 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         }
         entity.teleport(BallState.ballPosition);
         // Always create new particle tasks after movement
+        Map<Particle, List<? extends PacketGroupingAudience>> particleMap = new HashMap<>();
+        particleMap.put(Particle.WAX_ON, List.of(target));
+        particleMap.put(Particle.WAX_OFF, List.of(other));
 
         synchronized (tasksLock) {
             // Clear existing tasks
             BallState.task.cancel();
             BallState.task = ParticleGenerator.spawnBladeBall(
                     BallState.ballPosition,
-                    Map.of(Particle.WAX_ON, target, Particle.WAX_OFF, other),
+                    new PacketReceiver(particleMap),
                     1.0
             );
         }
@@ -195,7 +201,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
             BallState.task.cancel();
         }
 
-        BallState.task = ParticleGenerator.spawnSphereParticles(container, BallState.ballPosition, 0.5, 0.5, 0.5, Particle.WAX_OFF, Double.POSITIVE_INFINITY);
+        BallState.task = ParticleGenerator.spawnSphereParticles(BallState.ballPosition, 0.5, 0.5, 0.5, new PacketReceiver(container, Particle.WAX_OFF), Double.POSITIVE_INFINITY);
 
         if (entity != null) {
             entity.remove(); // Remove the old ball entity
@@ -227,7 +233,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         }
         target.setGameMode(GameMode.SPECTATOR); // Send player to spectator mode
         ParticleGenerator.spawnCircleParticles(
-                container, target.getPosition(), 0.5, 0.5, Particle.ITEM_SNOWBALL, 1
+                target.getPosition(), 0.5, 0.5, new PacketReceiver(container ,Particle.ITEM_SNOWBALL), 1
         ); // Generate visual effect
 
         synchronized (homedPlayerLock) {

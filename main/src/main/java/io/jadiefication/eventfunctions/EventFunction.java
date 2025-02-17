@@ -20,7 +20,6 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.EventDispatcher;
-import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
@@ -37,7 +36,6 @@ import net.minestom.server.timer.TaskSchedule;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public abstract class EventFunction implements PlayerDataHandler {
 
@@ -176,7 +174,6 @@ public abstract class EventFunction implements PlayerDataHandler {
         }
         if (inventory instanceof AbilitySelectionMenu) {
             ItemStack item = event.getClickedItem();
-            //Optional<CustomItemHolder> customItem = CustomItemHolder.hasItem(item);
             if (AbilitiesHolder.isAbility(item)) {
                 AbilitySelectionMenu.hasAbility = true;
                 player.getInventory().setItemStack(1, Objects.requireNonNull(AbilitiesHolder.getAbility(item)));
@@ -186,11 +183,7 @@ public abstract class EventFunction implements PlayerDataHandler {
             } else if (item.equals(SwordItems.shield)) {
                 player.getInventory().setItemStack(0, SwordItems.shield);
                 AbilitySelectionMenu.hasSword = true;
-            }/* else if (item.equals(SwordItems.diamondScythe)) {
-                ItemStack itemToGive = customItem.get().item();
-                player.getInventory().setItemStack(0, itemToGive);
-                AbilitySelectionMenu.hasSword = true;
-            }*/
+            }
             event.setCancelled(true);
         }
     }
@@ -227,7 +220,7 @@ public abstract class EventFunction implements PlayerDataHandler {
                 return;
             }
 
-            if (BladeBall.isHomedUponPlayer(player)) {
+            if (BladeBall.isHomedUponPlayer(player) && BallHandler.BallState.ballPosition.distanceSquared(player.getPosition()) < 0.25) {
                 Nimoh.game.setPlayerAttached(false);
                 BallHandler.BallState.firstTarget = false;
                 BallHandler.BallState.playerWhomHitTheBall = player;

@@ -2,8 +2,6 @@ package io.jadiefication;
 
 import io.jadiefication.commands.*;
 import io.jadiefication.commands.debug.DebugCommand;
-import io.jadiefication.commands.particlecommand.ThreeDimensionalParticleCommand;
-import io.jadiefication.commands.particlecommand.TwoDimensionalParticleCommand;
 import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
 import io.jadiefication.customitem.CustomItem;
@@ -17,7 +15,6 @@ import net.minestom.server.command.builder.Command;
 import net.minestom.server.entity.Player;
 import net.minestom.server.event.Event;
 import net.minestom.server.event.GlobalEventHandler;
-import net.minestom.server.event.entity.EntityAttackEvent;
 import net.minestom.server.event.inventory.InventoryCloseEvent;
 import net.minestom.server.event.inventory.InventoryOpenEvent;
 import net.minestom.server.event.inventory.InventoryPreClickEvent;
@@ -69,8 +66,8 @@ public sealed interface Server permits Nimoh {
 
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
-        List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TwoDimensionalParticleCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ThreeDimensionalParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand());
+        List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
+                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand());
 
         for (Command command : commands) {
             manager.register(command);

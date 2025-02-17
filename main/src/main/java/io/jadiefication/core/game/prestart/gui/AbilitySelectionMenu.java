@@ -1,19 +1,12 @@
 package io.jadiefication.core.game.prestart.gui;
 
 import io.jadiefication.AbilitiesHolder;
-import io.jadiefication.Nimoh;
-import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.gui.Border;
-import io.jadiefication.customitem.CustomItem;
-import io.jadiefication.particlegenerator.ParticleGenerator;
 import net.kyori.adventure.text.Component;
-import net.minestom.server.entity.Player;
-import net.minestom.server.event.player.PlayerUseItemEvent;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
-import net.minestom.server.particle.Particle;
 
 import java.util.List;
 

@@ -1,20 +1,15 @@
 package io.jadiefication.particlegenerator;
 
 import io.jadiefication.Nimoh;
+import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.particlegenerator.packets.PacketSender;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Player;
-import net.minestom.server.instance.Instance;
-import net.minestom.server.network.packet.server.play.ParticlePacket;
-import net.minestom.server.particle.Particle;
-import net.minestom.server.scoreboard.Team;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,13 +29,13 @@ public abstract class ParticleGenerator {
         }
     }
 
-    public static Task spawnBladeBall(Pos center, Map<Particle, Team> teams, double duration) {
+    public static Task spawnBladeBall(Pos center, PacketReceiver receiver, double duration) {
         Task particleTask = scheduler.scheduleTask(() -> {
             for (Map.Entry<Vec, Vec> baseVectors : CACHED_BALL_VECTORS) {
                 Vec translatedStart = baseVectors.getKey().add(center.x(), center.y(), center.z());
                 Vec translatedEnd = baseVectors.getValue().add(center.x(), center.y(), center.z());
 
-                PacketSender.sendPacketsToSpecificTeams(translatedStart, translatedEnd, teams);
+                PacketSender.sendPackets(receiver, translatedStart, translatedEnd);
             }
         }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 
@@ -54,7 +49,7 @@ public abstract class ParticleGenerator {
         return particleTask;
     }
 
-    private static Task createEdges(int edges, Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
+    private static Task createEdges(int edges, Pos center, double radiusX, double radiusY, PacketReceiver receiver, double duration) {
 
         Vec[] points = new Vec[edges];
 
@@ -72,7 +67,7 @@ public abstract class ParticleGenerator {
                 Vec start = points[i];
                 Vec end = points[(i + 1) % edges];
 
-                PacketSender.sendPackets(instance, start, end, particle);
+                PacketSender.sendPackets(receiver, start, end);
             }
         }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 
@@ -87,20 +82,20 @@ public abstract class ParticleGenerator {
         return particleTask;
     }
 
-    public static Task spawnOctagonParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
-        return createEdges(8, instance, center, radiusX, radiusY, particle, duration);
+    public static Task spawnOctagonParticles(Pos center, double radiusX, double radiusY, PacketReceiver receiver, double duration) {
+        return createEdges(8, center, radiusX, radiusY, receiver, duration);
     }
 
-    public static Task spawnCircleParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
-        return createEdges(32, instance, center, radiusX, radiusY, particle, duration);
+    public static Task spawnCircleParticles(Pos center, double radiusX, double radiusY, PacketReceiver receiver, double duration) {
+        return createEdges(32, center, radiusX, radiusY, receiver, duration);
     }
 
 
-    public static Task spawnSquareParticles(Instance instance, Pos center, double radiusX, double radiusY, Particle particle, double duration) {
-        return createEdges(4, instance, center, radiusX, radiusY, particle, duration);
+    public static Task spawnSquareParticles(Pos center, double radiusX, double radiusY, PacketReceiver receiver, double duration) {
+        return createEdges(4, center, radiusX, radiusY, receiver, duration);
     }
 
-    public static Task spawnSphereParticles(Instance instance, Pos center, double radiusX, double radiusY, double radiusZ, Particle particle, double duration) {
+    public static Task spawnSphereParticles(Pos center, double radiusX, double radiusY, double radiusZ, PacketReceiver receiver, double duration) {
         double phi = Math.PI * (3 - Math.sqrt(5));
         int points = 200; // Adjust for desired density
 
@@ -108,7 +103,7 @@ public abstract class ParticleGenerator {
             for (int i = 0; i < points; i++) {
                 Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
 
-                PacketSender.sendPackets(instance, vectors.getKey(), vectors.getValue(), particle);
+                PacketSender.sendPackets(receiver, vectors.getKey(), vectors.getValue());
             }
         }, TaskSchedule.tick(1), TaskSchedule.tick(1));
 
@@ -148,51 +143,5 @@ public abstract class ParticleGenerator {
         Vec end = new Vec(center.x() + nextX, center.y() + nextY, center.z() + nextZ);
 
         return Map.entry(start, end);
-    }
-
-    public static Task spawnSphereParticles(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, List<Player>> players, double duration) {
-        double phi = Math.PI * (3 - Math.sqrt(5));
-        int points = 200; // Adjust for desired density
-
-        Task particleTask = scheduler.scheduleTask(() -> {
-            for (int i = 0; i < points; i++) {
-                Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
-
-                PacketSender.sendPacketsToSpecificPlayers(vectors.getKey(), vectors.getValue(), players);
-            }
-        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
-
-        if (!Double.isInfinite(duration)) {
-            // Schedule task cancellation
-            scheduler.scheduleTask(() -> {
-                particleTask.cancel();
-                return TaskSchedule.nextTick();
-            }, TaskSchedule.seconds((long) duration));
-        }
-
-        return particleTask;
-    }
-
-    public static Task spawnSphereParticlesToTeams(Pos center, double radiusX, double radiusY, double radiusZ, Map<Particle, Team> players, double duration) {
-        double phi = Math.PI * (3 - Math.sqrt(5));
-        int points = 200; // Adjust for desired density
-
-        Task particleTask = scheduler.scheduleTask(() -> {
-            for (int i = 0; i < points; i++) {
-                Map.Entry<Vec, Vec> vectors = calculateSpehre(center, radiusX, radiusY, radiusZ, i, phi);
-
-                PacketSender.sendPacketsToSpecificTeams(vectors.getKey(), vectors.getValue(), players);
-            }
-        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
-
-        if (!Double.isInfinite(duration)) {
-            // Schedule task cancellation
-            scheduler.scheduleTask(() -> {
-                particleTask.cancel();
-                return TaskSchedule.nextTick();
-            }, TaskSchedule.seconds((long) duration));
-        }
-
-        return particleTask;
     }
 }

@@ -6,6 +6,7 @@ import io.jadiefication.core.start.team.GameTeam;
 import io.jadiefication.core.vote.VoteGamemode;
 import io.jadiefication.core.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
+import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Pos;
@@ -13,7 +14,6 @@ import net.minestom.server.coordinate.Vec;
 import net.minestom.server.entity.GameMode;
 import net.minestom.server.entity.Player;
 import net.minestom.server.instance.InstanceContainer;
-import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
@@ -41,7 +41,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
                 // Stop spawning particles when no longer staying still
                 return TaskSchedule.stop();
             }
-            BallState.task = ParticleGenerator.spawnSphereParticles(container, BallState.ballPosition, 0.5, 0.5, 0.5, Particle.WAX_OFF, 1);
+            BallState.task = ParticleGenerator.spawnSphereParticles(BallState.ballPosition, 0.5, 0.5, 0.5, new PacketReceiver(container, Particle.WAX_OFF), 1);
             return TaskSchedule.tick(1);
         }, TaskSchedule.tick(1));
 

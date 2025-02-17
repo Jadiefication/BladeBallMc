@@ -1,6 +1,5 @@
 package io.jadiefication;
 
-import io.jadiefication.core.ball.BallHandler;
 import io.jadiefication.core.ball.BladeBall;
 import io.jadiefication.core.data.player.PlayerDataHandler;
 import io.jadiefication.permission.PermissionHandler;
