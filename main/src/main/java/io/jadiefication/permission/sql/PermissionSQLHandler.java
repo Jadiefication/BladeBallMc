@@ -40,12 +40,6 @@ public interface PermissionSQLHandler {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
-        setPermissions();
-    }
-
-    private static void setPermissions() {
-
     }
 
     static void getPermissions(@NotNull PermissionablePlayer player) {
@@ -122,4 +116,27 @@ public interface PermissionSQLHandler {
         }
     }
 
+    static void removePermission(PermissionablePlayer player, Permissions permission) {
+        try (Connection connection = PlayerDataHandler.Config.dataSource.getConnection()) {
+            String query = "DELETE FROM player_permissions WHERE player_uuid = ? AND permission = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, String.valueOf(player.getUuid()));
+            statement.setString(2, permission.name());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void removePermission(PermissionableGroup group, Permissions permission) {
+        try (Connection connection = PlayerDataHandler.Config.dataSource.getConnection()) {
+            String query = "DELETE FROM group_permissions WHERE group_name = ? AND permission = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, ((TextComponent) group.getName()).content());
+            statement.setString(2, permission.name());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

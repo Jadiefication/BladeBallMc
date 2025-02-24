@@ -7,6 +7,9 @@ import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.eventfunctions.EventFunction;
+import io.jadiefication.permission.PermissionHandler;
+import io.jadiefication.permission.PermissionableGroup;
+import io.jadiefication.permission.sql.PermissionSQLHandler;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
@@ -56,6 +59,9 @@ public sealed interface Server permits Nimoh {
     static void worldManager(InstanceManager manager) {
 
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
+            PermissionHandler.groupPermissions.forEach((group, p) -> {
+                PermissionSQLHandler.setPermissions(group);
+            });
             manager.getInstances().forEach(instance -> {
                 instance.sendMessage(Component.text("§4§lServer shutting down"));
             });
