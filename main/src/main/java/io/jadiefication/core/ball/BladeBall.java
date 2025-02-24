@@ -10,8 +10,6 @@ import io.jadiefication.core.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
 import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.permission.PermissionablePlayer;
-import net.jadiefication.map.HashMapExtender;
-import net.jadiefication.map.MapExtender;
 import net.jadiefication.stream.StreamExpander;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;

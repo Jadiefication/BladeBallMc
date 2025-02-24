@@ -2,11 +2,8 @@ package io.jadiefication.particlegenerator.packets;
 
 import net.jadiefication.map.HashMapExtender;
 import net.jadiefication.map.MapExtender;
-import net.minestom.server.adventure.audience.PacketGroupingAudience;
 import net.minestom.server.coordinate.Vec;
-import net.minestom.server.entity.Player;
 import net.minestom.server.instance.Instance;
-import net.minestom.server.network.packet.server.ServerPacket;
 import net.minestom.server.network.packet.server.play.ParticlePacket;
 import net.minestom.server.particle.Particle;
 import net.minestom.server.scoreboard.Team;

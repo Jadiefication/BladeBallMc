@@ -12,8 +12,8 @@ import io.jadiefication.core.gui.Border;
 import io.jadiefication.core.item.SwordItems;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
-import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -42,7 +42,7 @@ public abstract class EventFunction implements PlayerDataHandler {
     public static void onBreak(PlayerBlockBreakEvent event) {
         ItemStack item = ItemStack.builder(Objects.requireNonNull(event.getBlock().registry().material())).build();
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
-        if (player.hasPermission(Permission.BREAK) && !player.getGameMode().equals(GameMode.ADVENTURE)) {
+        if (player.hasPermission(Permissions.getPermission("BREAK")) && !player.getGameMode().equals(GameMode.ADVENTURE)) {
             if (player.getGameMode().equals(GameMode.CREATIVE)) return;
             player.getInventory().addItemStack(item);
         } else {
@@ -121,7 +121,7 @@ public abstract class EventFunction implements PlayerDataHandler {
             axis = "z";
         }
 
-        if (player.hasPermission(Permission.PLACE) && !player.getGameMode().equals(GameMode.ADVENTURE) && CustomItemHolder.hasItem(player.getItemInMainHand()).isEmpty()) {
+        if (player.hasPermission(Permissions.getPermission("PLACE")) && !player.getGameMode().equals(GameMode.ADVENTURE) && CustomItemHolder.hasItem(player.getItemInMainHand()).isEmpty()) {
             Block directedBlock;
             if (axisList.contains(block)) {
                 directedBlock = block.withProperty("axis", axis);
@@ -151,7 +151,7 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onItemUse(PlayerUseItemEvent event) {
         ItemStack item = event.getItemStack();
-        if (CustomItem.getItems().contains(item) && ((PermissionablePlayer) event.getPlayer()).hasPermission(Permission.USE_CUSTOM_ITEM)) {
+        if (CustomItem.getItems().contains(item) && ((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.getPermission("USE_CUSTOM_ITEM"))) {
             CustomItem.getItemFunctionality(item).accept(event);
         }
     }

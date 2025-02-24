@@ -1,8 +1,8 @@
 package io.jadiefication.commands.weathercommand;
 
 import io.jadiefication.commands.CommandLogic;
-import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.Argument;
@@ -25,7 +25,7 @@ public class WeatherCommand extends Command implements CommandLogic {
             final WeatherEnum weather = context.get(type);
             if (sender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permission.WEATHER)) {
+                if (player.hasPermission(Permissions.getPermission("WEATHER"))) {
                     if (doAction.equalsIgnoreCase("set")) player.getInstance().setWeather(weather.getWeather());
                 }
             } else {

@@ -1,7 +1,7 @@
 package io.jadiefication.commands;
 
-import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentType;
@@ -24,7 +24,7 @@ public class OpCommand extends Command implements CommandLogic {
             final Player target = finder.findFirstPlayer(commandSender);
             if (commandSender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permission.OP)) {
+                if (player.hasPermission(Permissions.getPermission("OP"))) {
                     if (target != null) {
                         target.setPermissionLevel(4);
                     } else {
@@ -43,7 +43,7 @@ public class OpCommand extends Command implements CommandLogic {
         }, userName);
 
         addSyntax((commandSender, context) -> {
-            if (commandSender instanceof PermissionablePlayer player && (player.getPermissionLevel() == 4 || player.hasPermission(Permission.OP))) {
+            if (commandSender instanceof PermissionablePlayer player && (player.getPermissionLevel() == 4 || player.hasPermission(Permissions.getPermission("OP")))) {
                 player.setPermissionLevel(4);
             }
         });

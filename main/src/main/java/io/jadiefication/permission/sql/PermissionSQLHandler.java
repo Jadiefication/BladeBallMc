@@ -1,13 +1,11 @@
 package io.jadiefication.permission.sql;
 
-import io.jadiefication.Nimoh;
 import io.jadiefication.core.data.player.PlayerDataHandler;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.PermissionableGroup;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.TextComponent;
-import net.minestom.server.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;

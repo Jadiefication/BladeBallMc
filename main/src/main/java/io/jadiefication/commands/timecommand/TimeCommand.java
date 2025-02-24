@@ -1,8 +1,8 @@
 package io.jadiefication.commands.timecommand;
 
 import io.jadiefication.commands.CommandLogic;
-import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.Argument;
@@ -26,7 +26,7 @@ public class TimeCommand extends Command implements CommandLogic {
             final Time time = context.get(type);
             if (sender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permission.TIME)) {
+                if (player.hasPermission(Permissions.getPermission("TIME"))) {
                     if (doAction.equalsIgnoreCase("set")) player.getInstance().setTime(time.getTicks());
                 }
             } else {

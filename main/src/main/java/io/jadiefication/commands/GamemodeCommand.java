@@ -1,7 +1,7 @@
 package io.jadiefication.commands;
 
-import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
@@ -26,7 +26,7 @@ public class GamemodeCommand extends Command implements CommandLogic {
 
         addSyntax((commandSender, commandContext) -> {
             final GameMode switchGamemode = commandContext.get(gamemode);
-            if (commandSender instanceof PermissionablePlayer player && player.hasPermission(Permission.GAMEMODE)) player.setGameMode(switchGamemode);
+            if (commandSender instanceof PermissionablePlayer player && player.hasPermission(Permissions.getPermission("GAMEMODE"))) player.setGameMode(switchGamemode);
             else {
                 commandSender.sendMessage(Component.text("§4§lOnly players can use this command"));
             }
@@ -39,7 +39,7 @@ public class GamemodeCommand extends Command implements CommandLogic {
 
             if (sender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permission.GAMEMODE)) {
+                if (player.hasPermission(Permissions.getPermission("GAMEMODE"))) {
                     setGamemode(target, switchGamemode, sender);
                 } else {
                     sender.sendMessage(Component.text("§4§lNo permission"));

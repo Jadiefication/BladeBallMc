@@ -1,13 +1,9 @@
 package io.jadiefication.permission;
 
-import io.jadiefication.Nimoh;
 import io.jadiefication.permission.sql.PermissionSQLHandler;
-import net.kyori.adventure.text.TextComponent;
 import net.minestom.server.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
