@@ -14,6 +14,7 @@ import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
+import io.jadiefication.permission.sql.PermissionSQLHandler;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -62,6 +63,7 @@ public abstract class EventFunction implements PlayerDataHandler {
                 // Perform asynchronous tasks like sending pack info and getting player data
                 Server.sendPackInfo(player);
                 PlayerDataHandler.getData(player);
+                PermissionSQLHandler.getPermissions(player);
             }
 
             // Perform other logic after player data is loaded
@@ -84,6 +86,7 @@ public abstract class EventFunction implements PlayerDataHandler {
         AbilitiesHolder.cooldownMap.remove(player.getUuid());
         BladeBall.shieldCooldown.remove(player);
         PlayerDataHandler.updateData(player);
+        PermissionSQLHandler.setPermissions((PermissionablePlayer) player);
     }
 
 
