@@ -139,4 +139,28 @@ public interface PermissionSQLHandler {
             e.printStackTrace();
         }
     }
+
+    static void addPermission(PermissionablePlayer player, Permissions permission) {
+        try (Connection connection = PlayerDataHandler.Config.dataSource.getConnection()) {
+            String query = "INSERT INTO player_permissions (player_uuid, permission) VALUES (?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, String.valueOf(player.getUuid()));
+            statement.setString(2, permission.name());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    static void addPermission(PermissionableGroup group, Permissions permission) {
+        try (Connection connection = PlayerDataHandler.Config.dataSource.getConnection()) {
+            String query = "INSERT INTO group_permissions (group_name, permission) VALUES (?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, ((TextComponent) group.getName()).content());
+            statement.setString(2, permission.name());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
