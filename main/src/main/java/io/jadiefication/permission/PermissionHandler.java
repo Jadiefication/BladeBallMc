@@ -89,7 +89,7 @@ public abstract class PermissionHandler {
                 statement.setString(1, player.getUuid().toString());
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    permissions.add(Permissions.valueOf(resultSet.getString("permission")));
+                    permissions.add(Permissions.getPermission(resultSet.getString("permission")));
                 }
             }
         } catch (SQLException e) {
@@ -107,7 +107,7 @@ public abstract class PermissionHandler {
                 statement.setString(1, ((TextComponent) group.getName()).content());
                 ResultSet resultSet = statement.executeQuery();
                 while (resultSet.next()) {
-                    permissions.add(Permissions.valueOf(resultSet.getString("permission")));
+                    permissions.add(Permissions.getPermission(resultSet.getString("permission")));
                 }
             }
         } catch (SQLException e) {
@@ -163,7 +163,7 @@ public abstract class PermissionHandler {
         try (Connection connection = DriverManager.getConnection(Nimoh.url)) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setString(1, ((TextComponent) group.getName()).content());
-                preparedStatement.setString(2, permission.toString());
+                preparedStatement.setString(2, permission.name());
                 preparedStatement.executeUpdate();
             }
         } catch (SQLException e) {

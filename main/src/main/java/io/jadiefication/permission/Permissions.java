@@ -1,7 +1,10 @@
 package io.jadiefication.permission;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public record Permissions(String name) {
 
@@ -28,5 +31,10 @@ public record Permissions(String name) {
 
     public static boolean exists(String name) {
         return PERMISSIONS.contains(new Permissions(name));
+    }
+
+    public static Permissions getPermission(String name) throws NoSuchElementException {
+        return PERMISSIONS.stream().filter(permissions -> permissions.name.equals(name.toUpperCase()))
+                .findAny().get();
     }
 }
