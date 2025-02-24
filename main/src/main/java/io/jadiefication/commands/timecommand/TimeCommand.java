@@ -1,5 +1,6 @@
 package io.jadiefication.commands.timecommand;
 
+import io.jadiefication.commands.Action;
 import io.jadiefication.commands.CommandLogic;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
@@ -14,7 +15,7 @@ public class TimeCommand extends Command implements CommandLogic {
     public TimeCommand() {
         super("time");
 
-        var action = ArgumentType.String("action");
+        var action = ArgumentType.Enum("action", Action.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
         var type = ArgumentType.Enum("time", Time.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
 
         defaultExecutor(this);
@@ -22,12 +23,12 @@ public class TimeCommand extends Command implements CommandLogic {
         argumentCallbacks(new Argument[]{action, type});
 
         addSyntax((sender, context) -> {
-            final String doAction = context.get(action);
+            final Action doAction = context.get(action);
             final Time time = context.get(type);
             if (sender instanceof PermissionablePlayer player) {
 
                 if (player.hasPermission(Permissions.getPermission("TIME"))) {
-                    if (doAction.equalsIgnoreCase("set")) player.getInstance().setTime(time.getTicks());
+                    if (doAction.equals(Action.SET)) player.getInstance().setTime(time.getTicks());
                 }
             } else {
                 sender.sendMessage(Component.text("§4§lOnly players can use this command"));

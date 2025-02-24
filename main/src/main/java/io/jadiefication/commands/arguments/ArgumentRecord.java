@@ -15,11 +15,11 @@ import java.util.function.UnaryOperator;
 public class ArgumentRecord extends Argument<RecordComponent> {
     public final static int NOT_RECORD_VALUE_ERROR = 1;
 
-    private final Class<Record> recordClass;
+    private final Class<? extends Record> recordClass;
     private final RecordComponent[] values;
     private ArgumentRecord.Format format = ArgumentRecord.Format.DEFAULT;
 
-    public ArgumentRecord(@NotNull String id, Class<Record> recordClass) {
+    public ArgumentRecord(@NotNull String id, Class<? extends Record> recordClass) {
         super(id);
         this.recordClass = recordClass;
         this.values = recordClass.getRecordComponents();

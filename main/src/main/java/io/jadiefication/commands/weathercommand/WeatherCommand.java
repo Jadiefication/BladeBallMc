@@ -1,5 +1,6 @@
 package io.jadiefication.commands.weathercommand;
 
+import io.jadiefication.commands.Action;
 import io.jadiefication.commands.CommandLogic;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
@@ -13,7 +14,7 @@ public class WeatherCommand extends Command implements CommandLogic {
     public WeatherCommand() {
         super("weather");
 
-        var action = ArgumentType.String("action");
+        var action = ArgumentType.Enum("action", Action.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
         var type = ArgumentType.Enum("weather", WeatherEnum.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
 
         defaultExecutor(this);
@@ -21,12 +22,12 @@ public class WeatherCommand extends Command implements CommandLogic {
         argumentCallbacks(new Argument[]{action, type});
 
         addSyntax((sender, context) -> {
-            final String doAction = context.get(action);
+            final Action doAction = context.get(action);
             final WeatherEnum weather = context.get(type);
             if (sender instanceof PermissionablePlayer player) {
 
                 if (player.hasPermission(Permissions.getPermission("WEATHER"))) {
-                    if (doAction.equalsIgnoreCase("set")) player.getInstance().setWeather(weather.getWeather());
+                    if (doAction.equals(Action.SET)) player.getInstance().setWeather(weather.getWeather());
                 }
             } else {
                 sender.sendMessage(Component.text("§4§lOnly players can use this command"));

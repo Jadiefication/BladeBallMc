@@ -1,12 +1,10 @@
 package io.jadiefication.permission;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public record Permissions(String name) {
 
-    private static final List<Permissions> PERMISSIONS = new ArrayList<>();
+    private static final Set<Permissions> PERMISSIONS = new HashSet<>();
 
     public Permissions(String name) {
         this.name = name.toUpperCase();
