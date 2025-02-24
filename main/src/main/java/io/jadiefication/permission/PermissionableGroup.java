@@ -11,10 +11,10 @@ public class PermissionableGroup {
 
     private final Component name;
     private final List<Player> players;
-    private final List<Permission> permissions;
+    private final List<Permissions> permissions;
     private final static Map<PermissionableGroup, List<Player>> groupPlayers = new HashMap<>();
 
-    public PermissionableGroup(Component name, List<Player> players, List<Permission> permissions) {
+    public PermissionableGroup(Component name, List<Player> players, List<Permissions> permissions) {
         this.name = name;
         this.players = players;
         this.permissions = permissions;
@@ -37,15 +37,15 @@ public class PermissionableGroup {
         groupPlayers.replace(this, players);
     }
 
-    public void addPermission(Permission permission) {
+    public void addPermission(Permissions permission) {
         PermissionHandler.addPermission(this, permission);
     }
 
-    public void setPermissions(List<Permission> permissions) {
+    public void setPermissions(List<Permissions> permissions) {
         PermissionHandler.setPermissions(this, permissions);
     }
 
-    public void removePermission(Permission permission) {
+    public void removePermission(Permissions permission) {
         PermissionHandler.removePermission(this, permission);
     }
 

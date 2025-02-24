@@ -18,7 +18,7 @@ public class PermissionablePlayer extends Player {
         super(playerConnection, gameProfile);
     }
 
-    public void addPermission(Permission permission) {
+    public void addPermission(Permissions permission) {
         PermissionHandler.addPermission(this.asPlayer(), permission);
     }
 
@@ -26,7 +26,7 @@ public class PermissionablePlayer extends Player {
         this.groups.add(group);
     }
 
-    public void removePermission(Permission permission) {
+    public void removePermission(Permissions permission) {
         PermissionHandler.removePermission(this.asPlayer(), permission);
     }
 
@@ -34,12 +34,12 @@ public class PermissionablePlayer extends Player {
         this.groups.remove(group);
     }
 
-    public boolean hasPermission(Permission permission) {
+    public boolean hasPermission(Permissions permission) {
         return getPlayerPermissions().contains(permission) || this.asPlayer().getPermissionLevel() == 4
                 || this.groups.stream().anyMatch(group -> PermissionHandler.getPermissions(group).contains(permission));
     }
 
-    public List<Permission> getPlayerPermissions() {
+    public List<Permissions> getPlayerPermissions() {
         return PermissionHandler.getPermissions(this.asPlayer());
     }
 }
