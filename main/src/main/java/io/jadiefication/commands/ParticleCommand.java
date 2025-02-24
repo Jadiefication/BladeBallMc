@@ -3,8 +3,8 @@ package io.jadiefication.commands;
 import io.jadiefication.particlegenerator.ParticleBuilder;
 import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.particlegenerator.particle.ParticleShapes;
-import io.jadiefication.permission.Permission;
 import io.jadiefication.permission.PermissionablePlayer;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.command.builder.Command;
@@ -57,7 +57,7 @@ public class ParticleCommand extends Command implements CommandLogic {
         var durationOfShape = context.get(duration);
 
         if (sender instanceof PermissionablePlayer player) {
-            if (player.hasPermission(Permission.PARTICLE_SHAPE)) {
+            if (player.hasPermission(Permissions.getPermission("PARTICLE_SHAPE"))) {
                 if (is3D) ParticleBuilder.build(spawnShape, player.getPosition(), spawnRadiusX, spawnRadiusY, spawnRadiusZ, new PacketReceiver(player.getInstance(), particleType), durationOfShape);
                 else ParticleBuilder.build(spawnShape, player.getPosition(), spawnRadiusX, spawnRadiusY, new PacketReceiver(player.getInstance(), particleType), durationOfShape);
             } else {

@@ -2,10 +2,14 @@ package io.jadiefication;
 
 import io.jadiefication.commands.*;
 import io.jadiefication.commands.debug.DebugCommand;
+import io.jadiefication.commands.permission.PermissionCommand;
 import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.eventfunctions.EventFunction;
+import io.jadiefication.permission.PermissionHandler;
+import io.jadiefication.permission.PermissionableGroup;
+import io.jadiefication.permission.sql.PermissionSQLHandler;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
@@ -55,6 +59,9 @@ public sealed interface Server permits Nimoh {
     static void worldManager(InstanceManager manager) {
 
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
+            PermissionHandler.groupPermissions.forEach((group, p) -> {
+                PermissionSQLHandler.setPermissions(group);
+            });
             manager.getInstances().forEach(instance -> {
                 instance.sendMessage(Component.text("§4§lServer shutting down"));
             });
@@ -67,7 +74,7 @@ public sealed interface Server permits Nimoh {
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand());
+                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand(), new PermissionCommand());
 
         for (Command command : commands) {
             manager.register(command);

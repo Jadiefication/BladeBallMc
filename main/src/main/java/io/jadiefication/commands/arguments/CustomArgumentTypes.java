@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class CustomArgumentTypes extends ArgumentType {
 
-    public static ArgumentRecord Particle(@NotNull String id, @NotNull Class<Record> recordClass) {
+    public static ArgumentRecord Record(@NotNull String id, @NotNull Class<? extends Record> recordClass) {
         return new ArgumentRecord(id, recordClass);
     }
 }
