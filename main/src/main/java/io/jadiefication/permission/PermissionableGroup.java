@@ -37,18 +37,6 @@ public class PermissionableGroup {
         groupPlayers.replace(this, players);
     }
 
-    public void addPermission(Permissions permission) {
-        PermissionHandler.addPermission(this, permission);
-    }
-
-    public void setPermissions(List<Permissions> permissions) {
-        PermissionHandler.setPermissions(this, permissions);
-    }
-
-    public void removePermission(Permissions permission) {
-        PermissionHandler.removePermission(this, permission);
-    }
-
     public static boolean isPlayerInGroup(Player player, PermissionableGroup group) {
         return groupPlayers.get(group).contains(player);
     }
