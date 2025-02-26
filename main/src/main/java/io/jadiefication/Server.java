@@ -59,9 +59,7 @@ public sealed interface Server permits Nimoh {
     static void worldManager(InstanceManager manager) {
 
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
-            PermissionHandler.groupPermissions.forEach((group, p) -> {
-                PermissionSQLHandler.setPermissions(group);
-            });
+            PermissionHandler.groupPermissions.forEach((group, p) -> PermissionSQLHandler.setPermissions(group));
             manager.getInstances().forEach(instance -> {
                 instance.sendMessage(Component.text("§4§lServer shutting down"));
             });

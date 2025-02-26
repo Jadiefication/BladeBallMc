@@ -61,9 +61,9 @@ public abstract class EventFunction implements PlayerDataHandler {
         Nimoh.executorService.submit(() -> {
             synchronized (player) {
                 // Perform asynchronous tasks like sending pack info and getting player data
-                Server.sendPackInfo(player);
                 PlayerDataHandler.getData(player);
                 PermissionSQLHandler.getPermissions(player);
+                Server.sendPackInfo(player);
             }
 
             // Perform other logic after player data is loaded

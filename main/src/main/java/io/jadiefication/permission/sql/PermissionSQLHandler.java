@@ -83,16 +83,20 @@ public interface PermissionSQLHandler {
     static void setPermissions(@NotNull PermissionablePlayer player) {
         try (Connection connection = PlayerDataHandler.Config.dataSource.getConnection()) {
             String query = "REPLACE INTO player_permissions (player_uuid, permission) VALUES (?, ?)";
-            PermissionHandler.playerPermissions.get(player).forEach(permissions -> {
-                try {
-                    PreparedStatement statement = connection.prepareStatement(query);
-                    statement.setString(1, String.valueOf(player.getUuid()));
-                    statement.setString(2, permissions.name());
-                    statement.executeUpdate();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            });
+            try {
+                PermissionHandler.playerPermissions.get(player).forEach(permissions -> {
+                    try {
+                        PreparedStatement statement = connection.prepareStatement(query);
+                        statement.setString(1, String.valueOf(player.getUuid()));
+                        statement.setString(2, permissions.name());
+                        statement.executeUpdate();
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (NullPointerException ignored) {
+
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

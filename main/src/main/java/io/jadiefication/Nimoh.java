@@ -84,9 +84,8 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
 
         MojangAuth.init();
 
-        PermissionHandler.startHandler();
-
         PlayerDataHandler.start();
+        PermissionHandler.startHandler();
 
         int port = Integer.parseInt(config.split("port=")[1].split("\n")[0]);
 

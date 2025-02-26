@@ -30,6 +30,10 @@ public interface PlayerDataHandler extends Handler {
         Config.config.setMinimumIdle(5);
         Config.config.setIdleTimeout(300000);
         Config.config.setMaxLifetime(600000);
+        Config.config.addDataSourceProperty("journal_mode", "WAL");
+        Config.config.addDataSourceProperty("synchronous", "NORMAL");
+        Config.config.setMaximumPoolSize(1); // SQLite works better with single connection
+        Config.config.setConnectionTimeout(30000);
         Config.dataSource = new HikariDataSource(Config.config);
         startDatabase();
     }
