@@ -37,8 +37,10 @@ public class PermissionablePlayer extends Player {
     }
 
     public boolean hasPermission(Permissions permission) {
-        return getPlayerPermissions().contains(permission) || this.asPlayer().getPermissionLevel() == 4
-                || this.groups.stream().anyMatch(group -> PermissionHandler.getPermissions(group).contains(permission));
+        if (getPlayerPermissions() != null) {
+            return getPlayerPermissions().contains(permission) || this.asPlayer().getPermissionLevel() == 4
+                    || this.groups.stream().anyMatch(group -> PermissionHandler.getPermissions(group).contains(permission));
+        } else return this.asPlayer().getPermissionLevel() == 4;
     }
 
     public Set<Permissions> getPlayerPermissions() {
