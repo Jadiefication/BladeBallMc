@@ -33,4 +33,8 @@ public abstract class CollisionItem {
     public static void createArea(String name) {
         CollisionHandler.handler.defineArea(start, end, name);
     }
+
+    public static boolean isSelected() {
+        return start != null && end != null;
+    }
 }
