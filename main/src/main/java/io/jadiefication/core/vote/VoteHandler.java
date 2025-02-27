@@ -27,6 +27,6 @@ public interface VoteHandler extends Handler {
 
     class Vote {
 
-        public static VoteGamemode gamemode = null;
+        public static VoteGamemode gamemode = VoteGamemode.SOLO;
     }
 }

@@ -3,6 +3,7 @@ package io.jadiefication.core.ball;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.core.ball.entity.BallEntity;
+import io.jadiefication.core.game.start.Match;
 import io.jadiefication.core.start.team.GameTeam;
 import io.jadiefication.core.start.team.TeamHandler;
 import io.jadiefication.core.vote.VoteGamemode;
@@ -72,26 +73,21 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
     private static List<Player> otherList = new ArrayList<>();
     private static final Notification winnerNotification = new Notification(Component.text("You gained 20 Coins", NamedTextColor.GOLD), FrameType.CHALLENGE, Server.coin);
     public static final Map<Player, Integer> shieldCooldown = new HashMap<>();
+    private static Match mainMatch;
 
     @Override
     public void update(InstanceContainer container) {
-        int dt = BallState.dt;
-
-        BallState.dtCounter.cancel();
-        BallState.dt = 0;
 
         if (Vote.gamemode != null && Vote.gamemode.equals(VoteGamemode.TEAM)) {
             if (TeamHandler.getInstance().isEmpty().isPresent()) {
                 GameTeam team = TeamHandler.getInstance().isEmpty().get();
                 GameTeam winner = TeamHandler.getInstance().getOpposingTeam(team);
                 PermissionablePlayer[] players = new PermissionablePlayer[winner.getPlayers().size()];
-                ((StreamExpander<PermissionablePlayer>) winner.getPlayers().stream()).forEachIndexed((player, index) -> {
-                    players[index] = player;
-                });
+                ((StreamExpander<PermissionablePlayer>) winner.getPlayers().stream()).forEachIndexed((player, index) -> players[index] = player);
                 sendWin(players);
             }
         } else {
-            if (container.getPlayers().size() == 1 && Nimoh.testing) {
+            if (mainMatch.getPlayers().size() == 1 && !Nimoh.testing) {
                 sendWin((PermissionablePlayer) container.getPlayers().toArray()[0]);
                 Nimoh.updateTask.cancel();
                 BallState.task.cancel();
@@ -118,7 +114,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
     private static void doHoming(Vec movementVec, InstanceContainer container) {
         List<String> playerNames = new ArrayList<>();
-        List<Player> players = new ArrayList<>(container.getPlayers().stream().toList());
+        List<Player> players = new ArrayList<>(mainMatch.getPlayers());
         players.remove(homedUponPlayer);
         String homedUsername;
 
@@ -182,8 +178,8 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
     @Override
     public void start(InstanceContainer container) {
-        container.getPlayers().forEach(player -> {
-            player.addEffect(new Potion(PotionEffect.GLOWING, 1, Integer.MAX_VALUE));
+        mainMatch = new Match(container.getPlayers());
+        mainMatch.getPlayers().forEach(player -> {
             if (homedUponPlayer != null && player != homedUponPlayer) {
                 other.removeMember(player.getUsername());
             } else if (player == homedUponPlayer) target.removeMember(player.getUsername());
@@ -230,6 +226,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
                     BallState.playerWhomHitTheBall.getPosition(), Pos.ZERO, 0, 1));
         }
         target.setGameMode(GameMode.SPECTATOR); // Send player to spectator mode
+        mainMatch.removePlayer(target);
         ParticleGenerator.spawnCircleParticles(
                 target.getPosition(), 0.5, 0.5, new PacketReceiver(container ,Particle.ITEM_SNOWBALL), 1
         ); // Generate visual effect
@@ -240,7 +237,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
         }
 
-        if (Vote.gamemode != null && Vote.gamemode.equals(VoteGamemode.TEAM)) {
+        if (Vote.gamemode.equals(VoteGamemode.TEAM)) {
             GameTeam.getTeam(target).removePlayer(target);
         }
 
