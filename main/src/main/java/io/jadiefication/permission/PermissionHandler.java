@@ -14,7 +14,6 @@ public interface PermissionHandler extends PermissionSQLHandler {
     Map<PermissionableGroup, List<Permissions>> groupPermissions = new HashMap<>();
 
     static void startHandler() {
-        Permissions.initialize();
         PermissionSQLHandler.startDatabase();
     }
 

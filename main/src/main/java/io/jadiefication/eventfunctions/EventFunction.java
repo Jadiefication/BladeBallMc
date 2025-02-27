@@ -43,7 +43,7 @@ public abstract class EventFunction implements PlayerDataHandler {
     public static void onBreak(PlayerBlockBreakEvent event) {
         ItemStack item = ItemStack.builder(Objects.requireNonNull(event.getBlock().registry().material())).build();
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
-        if (player.hasPermission(Permissions.getPermission("BREAK")) && !player.getGameMode().equals(GameMode.ADVENTURE)) {
+        if (player.hasPermission(Permissions.BREAK) && !player.getGameMode().equals(GameMode.ADVENTURE)) {
             if (player.getGameMode().equals(GameMode.CREATIVE)) return;
             player.getInventory().addItemStack(item);
         } else {
@@ -124,7 +124,7 @@ public abstract class EventFunction implements PlayerDataHandler {
             axis = "z";
         }
 
-        if (player.hasPermission(Permissions.getPermission("PLACE")) && !player.getGameMode().equals(GameMode.ADVENTURE) && CustomItemHolder.hasItem(player.getItemInMainHand()).isEmpty()) {
+        if (player.hasPermission(Permissions.PLACE) && !player.getGameMode().equals(GameMode.ADVENTURE) && CustomItemHolder.hasItem(player.getItemInMainHand()).isEmpty()) {
             Block directedBlock;
             if (axisList.contains(block)) {
                 directedBlock = block.withProperty("axis", axis);
@@ -154,7 +154,7 @@ public abstract class EventFunction implements PlayerDataHandler {
 
     public static void onItemUse(PlayerUseItemEvent event) {
         ItemStack item = event.getItemStack();
-        if (CustomItem.getItems().contains(item) && ((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.getPermission("USE_CUSTOM_ITEM"))) {
+        if (CustomItem.getItems().contains(item) && ((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.USE_CUSTOM_ITEM)) {
             CustomItem.getItemFunctionality(item).accept(event);
         }
     }

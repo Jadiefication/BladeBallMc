@@ -51,7 +51,11 @@ public interface PermissionSQLHandler {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    permissions.add(Permissions.getPermission(resultSet.getString("player_permissions")));
+                    try {
+                        permissions.add(Permissions.valueOf(resultSet.getString("player_permissions")));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -70,7 +74,11 @@ public interface PermissionSQLHandler {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    permissions.add(Permissions.getPermission(resultSet.getString("group_permissions")));
+                    try {
+                        permissions.add(Permissions.valueOf(resultSet.getString("group_permissions")));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         } catch (SQLException e) {
