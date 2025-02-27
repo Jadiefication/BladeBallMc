@@ -1,4 +1,4 @@
-package io.jadiefication.core.data.player;
+package io.jadiefication.util.data.player;
 
 import java.io.BufferedReader;
 import java.io.IOException;

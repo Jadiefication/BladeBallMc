@@ -1,7 +1,7 @@
-package io.jadiefication.core.game.prestart.gui;
+package io.jadiefication.util.game.prestart.gui;
 
 import io.jadiefication.AbilitiesHolder;
-import io.jadiefication.core.gui.Border;
+import io.jadiefication.util.gui.Border;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.inventory.Inventory;
 import net.minestom.server.inventory.InventoryType;

@@ -1,7 +1,8 @@
 package io.jadiefication.commands.permission;
 
+import io.jadiefication.Nimoh;
 import io.jadiefication.commands.CommandLogic;
-import io.jadiefication.core.data.player.UUIDFetcher;
+import io.jadiefication.util.data.player.UUIDFetcher;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
@@ -68,6 +69,8 @@ public class PermissionCommand extends Command implements CommandLogic {
                             PermissionHandler.removePermission(player, _permission);
                         }
                     }
+                } else {
+                    sender.sendMessage(Component.text("§4§lNo permission"));
                 }
             } else {
                 sender.sendMessage(Component.text("§4§lOnly players can use this command"));

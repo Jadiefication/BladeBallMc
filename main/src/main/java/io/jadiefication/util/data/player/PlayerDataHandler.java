@@ -1,9 +1,10 @@
-package io.jadiefication.core.data.player;
+package io.jadiefication.util.data.player;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.jadiefication.Nimoh;
-import io.jadiefication.core.Handler;
+import io.jadiefication.permission.sql.PermissionSQLHandler;
+import io.jadiefication.util.Handler;
 import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.text.Component;
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface PlayerDataHandler extends Handler {
 
-    static void start() {
+    static void start() throws SQLException {
         Config.config.setJdbcUrl(Nimoh.url);
         Config.config.setMaximumPoolSize(10);
         Config.config.setMinimumIdle(5);
@@ -35,18 +36,17 @@ public interface PlayerDataHandler extends Handler {
         Config.config.setMaximumPoolSize(1); // SQLite works better with single connection
         Config.config.setConnectionTimeout(30000);
         Config.dataSource = new HikariDataSource(Config.config);
+        Nimoh.connection = Config.dataSource.getConnection();
         startDatabase();
     }
 
     private static void getCurrency(Player player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = Config.dataSource.getConnection()) {
-                PreparedStatement statement = connection.prepareStatement("SELECT currency FROM player_currency WHERE player_uuid = ?");
+            try {
+                PreparedStatement statement = Nimoh.connection.prepareStatement("SELECT currency FROM player_currency WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
                 try (ResultSet resultSet = statement.executeQuery()) {
                     ((PermissionablePlayer) player).currencyAmount = resultSet.getInt("currency");
-                } finally {
-                    connection.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -56,13 +56,11 @@ public interface PlayerDataHandler extends Handler {
 
     private static void getWins(Player player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = Config.dataSource.getConnection()) {
-                PreparedStatement statement = connection.prepareStatement("SELECT wins FROM player_currency WHERE player_uuid = ?");
+            try {
+                PreparedStatement statement = Nimoh.connection.prepareStatement("SELECT wins FROM player_currency WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
                 try (ResultSet resultSet = statement.executeQuery()) {
                     ((PermissionablePlayer) player).winAmount = resultSet.getInt("wins");
-                } finally {
-                    connection.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -74,8 +72,8 @@ public interface PlayerDataHandler extends Handler {
         Nimoh.executorService.submit(() -> {
             getWins(player);
             getCurrency(player);
-            try (Connection connection = Config.dataSource.getConnection()) {
-                PreparedStatement statement = connection.prepareStatement("SELECT * FROM player_inventory WHERE player_uuid = ?");
+            try {
+                PreparedStatement statement = Nimoh.connection.prepareStatement("SELECT * FROM player_inventory WHERE player_uuid = ?");
                 statement.setString(1, player.getUuid().toString());
 
                 try (ResultSet resultSet = statement.executeQuery()) {
@@ -113,8 +111,6 @@ public interface PlayerDataHandler extends Handler {
                             e.printStackTrace();
                         }
                     }
-                } finally {
-                    connection.close();
                 }
             } catch (SQLException e) {
                 System.out.println("Could not connect to DB");
@@ -127,6 +123,7 @@ public interface PlayerDataHandler extends Handler {
         Nimoh.executorService.submit(() ->{
             setWins(((PermissionablePlayer) player));
             setCurrency(((PermissionablePlayer) player));
+            PermissionSQLHandler.setPermissions((PermissionablePlayer) player);
             String uuid = player.getUuid().toString();
             AtomicInteger slot = new AtomicInteger();
             Arrays.stream(player.getInventory().getItemStacks()).forEach((item) -> {
@@ -139,7 +136,7 @@ public interface PlayerDataHandler extends Handler {
     }
 
     private static void startDatabase() {
-        try (Connection connection = Config.dataSource.getConnection()) {
+        try {
             // Create the tables if they do not exist
             String createPlayerTable = """
                 CREATE TABLE IF NOT EXISTS player_inventory (
@@ -161,11 +158,9 @@ public interface PlayerDataHandler extends Handler {
                     )
                     """;
 
-            try (Statement statement = connection.createStatement()) {
+            try (Statement statement = Nimoh.connection.createStatement()) {
                 statement.execute(createPlayerTable);
                 statement.execute(createPlayerStatsTable);
-            } finally {
-                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -173,10 +168,10 @@ public interface PlayerDataHandler extends Handler {
     }
 
     private static void setPlayerData(String uuid, int slot, ItemStack item) {
-        try (Connection connection = Config.dataSource.getConnection()) {
+        try {
             // Check if the row already exists
             String checkQuery = "SELECT COUNT(*) FROM player_inventory WHERE player_uuid = ? AND slot = ?";
-            try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
+            try (PreparedStatement checkStatement = Nimoh.connection.prepareStatement(checkQuery)) {
                 checkStatement.setString(1, uuid);
                 checkStatement.setInt(2, slot);
                 try (ResultSet resultSet = checkStatement.executeQuery()) {
@@ -184,19 +179,17 @@ public interface PlayerDataHandler extends Handler {
                     if (resultSet.getInt(1) > 0) {
                         // Row exists, update it
                         String updateQuery = "UPDATE player_inventory SET itemid = ?, custommodeldata = ?, customname = ?, customlore = ? WHERE player_uuid = ? AND slot = ?";
-                        try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                        try (PreparedStatement updateStatement = Nimoh.connection.prepareStatement(updateQuery)) {
                             prepareStatements(uuid, slot, item, updateStatement);
                         }
                     } else {
                         // Row does not exist, insert it
                         String insertQuery = "INSERT INTO player_inventory (player_uuid, slot, itemid, custommodeldata, customname, customlore) VALUES (?, ?, ?, ?, ?, ?)";
-                        try (PreparedStatement insertStatement = connection.prepareStatement(insertQuery)) {
+                        try (PreparedStatement insertStatement = Nimoh.connection.prepareStatement(insertQuery)) {
                             prepareStatements(uuid, slot, item, insertStatement);
                         }
                     }
                 }
-            } finally {
-                connection.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -205,16 +198,16 @@ public interface PlayerDataHandler extends Handler {
 
     private static void setCurrency(PermissionablePlayer player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = Config.dataSource.getConnection()) {
+            try {
                 // First check if player exists
                 String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
-                try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
+                try (PreparedStatement checkStatement = Nimoh.connection.prepareStatement(checkQuery)) {
                     checkStatement.setString(1, player.getUuid().toString());
                     ResultSet rs = checkStatement.executeQuery();
                     rs.next();
                     if (rs.getInt(1) > 0) {
                         // Update existing player
-                        PreparedStatement updateStatement = connection.prepareStatement(
+                        PreparedStatement updateStatement = Nimoh.connection.prepareStatement(
                                 "UPDATE player_currency SET currency = ? WHERE player_uuid = ?"
                         );
                         updateStatement.setInt(1, player.currencyAmount);
@@ -222,7 +215,7 @@ public interface PlayerDataHandler extends Handler {
                         updateStatement.executeUpdate();
                     } else {
                         // Insert new player
-                        PreparedStatement insertStatement = connection.prepareStatement(
+                        PreparedStatement insertStatement = Nimoh.connection.prepareStatement(
                                 "INSERT INTO player_currency (player_uuid, currency) VALUES (?, ?)"
                         );
                         insertStatement.setString(1, player.getUuid().toString());
@@ -230,7 +223,7 @@ public interface PlayerDataHandler extends Handler {
                         insertStatement.executeUpdate();
                     }
                 } finally {
-                    connection.close();
+                    Nimoh.connection.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -240,16 +233,16 @@ public interface PlayerDataHandler extends Handler {
 
     private static void setWins(PermissionablePlayer player) {
         Nimoh.executorService.submit(() -> {
-            try (Connection connection = Config.dataSource.getConnection()) {
+            try {
                 // First check if player exists
                 String checkQuery = "SELECT COUNT(*) FROM player_currency WHERE player_uuid = ?";
-                try (PreparedStatement checkStatement = connection.prepareStatement(checkQuery)) {
+                try (PreparedStatement checkStatement = Nimoh.connection.prepareStatement(checkQuery)) {
                     checkStatement.setString(1, player.getUuid().toString());
                     ResultSet rs = checkStatement.executeQuery();
                     rs.next();
                     if (rs.getInt(1) > 0) {
                         // Update existing player
-                        PreparedStatement updateStatement = connection.prepareStatement(
+                        PreparedStatement updateStatement = Nimoh.connection.prepareStatement(
                                 "UPDATE player_currency SET wins = ? WHERE player_uuid = ?"
                         );
                         updateStatement.setInt(1, player.winAmount);
@@ -257,15 +250,13 @@ public interface PlayerDataHandler extends Handler {
                         updateStatement.executeUpdate();
                     } else {
                         // Insert new player
-                        PreparedStatement insertStatement = connection.prepareStatement(
+                        PreparedStatement insertStatement = Nimoh.connection.prepareStatement(
                                 "INSERT INTO player_currency (player_uuid, wins) VALUES (?, ?)"
                         );
                         insertStatement.setString(1, player.getUuid().toString());
                         insertStatement.setInt(2, player.winAmount);
                         insertStatement.executeUpdate();
                     }
-                } finally {
-                    connection.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();

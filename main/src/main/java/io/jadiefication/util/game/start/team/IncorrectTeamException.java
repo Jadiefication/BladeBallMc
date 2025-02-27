@@ -1,4 +1,4 @@
-package io.jadiefication.core.start.team;
+package io.jadiefication.util.game.start.team;
 
 public class IncorrectTeamException extends RuntimeException {
     public IncorrectTeamException() {

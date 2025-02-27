@@ -1,4 +1,4 @@
-package io.jadiefication.core.ball.entity;
+package io.jadiefication.util.game.start.ball.entity;
 
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Entity;

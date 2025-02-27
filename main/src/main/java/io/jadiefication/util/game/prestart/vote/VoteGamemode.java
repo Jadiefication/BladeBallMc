@@ -1,4 +1,4 @@
-package io.jadiefication.core.vote;
+package io.jadiefication.util.game.prestart.vote;
 
 public enum VoteGamemode {
     TEAM,

@@ -1,7 +1,7 @@
 package io.jadiefication;
 
-import io.jadiefication.core.ball.BladeBall;
-import io.jadiefication.core.data.player.PlayerDataHandler;
+import io.jadiefication.util.game.start.ball.BladeBall;
+import io.jadiefication.util.data.player.PlayerDataHandler;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.minestom.server.MinecraftServer;
@@ -22,6 +22,8 @@ import net.minestom.server.timer.TaskSchedule;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +44,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
     public static boolean testing = false;
     public static File confFile = new File("server.properties");
     public static String config;
+    public static Connection connection;
 
     static {
         try {
@@ -84,7 +87,11 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
 
         MojangAuth.init();
 
-        PlayerDataHandler.start();
+        try {
+            PlayerDataHandler.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         PermissionHandler.startHandler();
 
         int port = Integer.parseInt(config.split("port=")[1].split("\n")[0]);
@@ -152,7 +159,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
         });
 
         instanceContainer.setChunkLoader(anvilLoader);
-        Server.worldManager(instanceManager);
+        Server.shutdownBuilder(instanceManager);
 
         instanceContainer.setChunkSupplier(LightingChunk::new);
     }

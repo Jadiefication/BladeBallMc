@@ -1,6 +1,6 @@
-package io.jadiefication.core.vote;
+package io.jadiefication.util.game.prestart.vote;
 
-import io.jadiefication.core.Handler;
+import io.jadiefication.util.Handler;
 import net.minestom.server.instance.InstanceContainer;
 
 public interface VoteHandler extends Handler {

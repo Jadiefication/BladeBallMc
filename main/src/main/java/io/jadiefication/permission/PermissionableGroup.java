@@ -6,15 +6,16 @@ import net.minestom.server.entity.Player;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class PermissionableGroup {
 
     private final Component name;
-    private final List<Player> players;
-    private final List<Permissions> permissions;
-    private final static Map<PermissionableGroup, List<Player>> groupPlayers = new HashMap<>();
+    private final Set<Player> players;
+    private final Set<Permissions> permissions;
+    private final static Map<PermissionableGroup, Set<Player>> groupPlayers = new HashMap<>();
 
-    public PermissionableGroup(Component name, List<Player> players, List<Permissions> permissions) {
+    public PermissionableGroup(Component name, Set<Player> players, Set<Permissions> permissions) {
         this.name = name;
         this.players = players;
         this.permissions = permissions;
@@ -31,7 +32,7 @@ public class PermissionableGroup {
         groupPlayers.replace(this, players);
     }
 
-    public void setPlayers(List<Player> players) {
+    public void setPlayers(Set<Player> players) {
         this.players.clear();
         this.players.addAll(players);
         groupPlayers.replace(this, players);
@@ -41,11 +42,11 @@ public class PermissionableGroup {
         return groupPlayers.get(group).contains(player);
     }
 
-    public static List<Player> getPlayers(PermissionableGroup group) {
+    public static Set<Player> getPlayers(PermissionableGroup group) {
         return groupPlayers.get(group);
     }
 
-    public List<Player> getPlayers() {
+    public Set<Player> getPlayers() {
         return players;
     }
 

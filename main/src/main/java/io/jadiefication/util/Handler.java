@@ -1,4 +1,4 @@
-package io.jadiefication.core;
+package io.jadiefication.util;
 
 import net.minestom.server.instance.InstanceContainer;
 

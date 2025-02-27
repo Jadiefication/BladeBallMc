@@ -1,6 +1,6 @@
-package io.jadiefication.core.start.team;
+package io.jadiefication.util.game.start.team;
 
-import io.jadiefication.core.Handler;
+import io.jadiefication.util.Handler;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.jadiefication.stream.StreamExpander;
 import net.kyori.adventure.text.Component;

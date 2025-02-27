@@ -1,7 +1,7 @@
 package io.jadiefication.commands.debug.gui;
 
-import io.jadiefication.core.gui.Border;
-import io.jadiefication.core.gui.Heads;
+import io.jadiefication.util.gui.Border;
+import io.jadiefication.util.gui.Heads;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.permission.PermissionablePlayer;
 import net.kyori.adventure.bossbar.BossBar;

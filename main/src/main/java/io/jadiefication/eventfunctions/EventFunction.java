@@ -4,12 +4,13 @@ import io.jadiefication.AbilitiesHolder;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.commands.debug.gui.DebugGui;
-import io.jadiefication.core.ball.BallHandler;
-import io.jadiefication.core.ball.BladeBall;
-import io.jadiefication.core.data.player.PlayerDataHandler;
-import io.jadiefication.core.game.prestart.gui.AbilitySelectionMenu;
-import io.jadiefication.core.gui.Border;
-import io.jadiefication.core.item.SwordItems;
+import io.jadiefication.permission.PermissionHandler;
+import io.jadiefication.util.game.start.ball.BallHandler;
+import io.jadiefication.util.game.start.ball.BladeBall;
+import io.jadiefication.util.data.player.PlayerDataHandler;
+import io.jadiefication.util.game.prestart.gui.AbilitySelectionMenu;
+import io.jadiefication.util.gui.Border;
+import io.jadiefication.util.data.game.item.SwordItems;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.permission.PermissionablePlayer;
@@ -86,7 +87,6 @@ public abstract class EventFunction implements PlayerDataHandler {
         AbilitiesHolder.cooldownMap.remove(player.getUuid());
         BladeBall.shieldCooldown.remove(player);
         PlayerDataHandler.updateData(player);
-        PermissionSQLHandler.setPermissions((PermissionablePlayer) player);
     }
 
 

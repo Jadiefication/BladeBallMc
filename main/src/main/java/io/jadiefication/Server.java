@@ -2,6 +2,7 @@ package io.jadiefication;
 
 import io.jadiefication.commands.*;
 import io.jadiefication.commands.debug.DebugCommand;
+import io.jadiefication.commands.permission.PermissionCommand;
 import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
 import io.jadiefication.customitem.CustomItem;
@@ -29,6 +30,7 @@ import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 
 import java.net.URI;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -54,7 +56,7 @@ public sealed interface Server permits Nimoh {
                 .build();
     }
 
-    static void worldManager(InstanceManager manager) {
+    static void shutdownBuilder(InstanceManager manager) {
 
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
             PermissionHandler.groupPermissions.forEach((group, p) -> PermissionSQLHandler.setPermissions(group));
@@ -62,6 +64,11 @@ public sealed interface Server permits Nimoh {
                 instance.sendMessage(Component.text("§4§lServer shutting down"));
             });
             manager.getInstances().forEach(Instance::saveChunksToStorage);
+            try {
+                Nimoh.connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             System.out.println("Saving chunks...");
         });
     }
@@ -70,7 +77,7 @@ public sealed interface Server permits Nimoh {
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand());
+                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand(), new PermissionCommand());
 
         for (Command command : commands) {
             manager.register(command);

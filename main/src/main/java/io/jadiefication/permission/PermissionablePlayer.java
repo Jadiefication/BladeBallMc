@@ -6,11 +6,13 @@ import net.minestom.server.network.player.PlayerConnection;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PermissionablePlayer extends Player {
 
-    private final List<PermissionableGroup> groups = new ArrayList<>();
+    private final Set<PermissionableGroup> groups = new HashSet<>();
     public int currencyAmount = 0;
     public int winAmount = 0;
 
@@ -39,7 +41,7 @@ public class PermissionablePlayer extends Player {
                 || this.groups.stream().anyMatch(group -> PermissionHandler.getPermissions(group).contains(permission));
     }
 
-    public List<Permissions> getPlayerPermissions() {
+    public Set<Permissions> getPlayerPermissions() {
         return PermissionHandler.getPermissions(this.asPlayer());
     }
 }
