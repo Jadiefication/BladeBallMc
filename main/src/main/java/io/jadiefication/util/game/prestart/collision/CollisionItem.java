@@ -24,13 +24,19 @@ public abstract class CollisionItem {
             name, lore, 0);
 
     public static void onLeftClick(PlayerStartDiggingEvent event) {
-        if (((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.OP) && event.getPlayer().getItemInMainHand().equals(item.item())) {
+        if (((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.OP) && event.getPlayer().getItemInMainHand().equals(item.item()
+                .withCustomName(item.title())
+                .withLore(item.lore())
+                .withCustomModelData(item.customModelData()))) {
             start = event.getBlockPosition().asVec();
         }
     }
 
     public static void onRightClick(PlayerBlockInteractEvent event) {
-        if (((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.OP) && event.getPlayer().getItemInMainHand().equals(item.item())) {
+        if (((PermissionablePlayer) event.getPlayer()).hasPermission(Permissions.OP) && event.getPlayer().getItemInMainHand().equals(item.item()
+                .withCustomName(item.title())
+                .withLore(item.lore())
+                .withCustomModelData(item.customModelData()))) {
             end = event.getBlockPosition().asVec();
         }
     }
