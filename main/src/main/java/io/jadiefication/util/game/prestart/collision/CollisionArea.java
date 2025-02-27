@@ -1,11 +1,24 @@
 package io.jadiefication.util.game.prestart.collision;
 
+import io.jadiefication.Nimoh;
 import io.jadiefication.event.PlayerCollideEvent;
+import io.jadiefication.particlegenerator.packets.PacketReceiver;
+import io.jadiefication.particlegenerator.packets.PacketSender;
+import net.jadiefication.map.HashMapExtender;
+import net.jadiefication.map.MapExtender;
+import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Vec;
+import net.minestom.server.entity.Entity;
+import net.minestom.server.entity.EntityType;
 import net.minestom.server.entity.Player;
+import net.minestom.server.entity.metadata.display.TextDisplayMeta;
 import net.minestom.server.event.EventDispatcher;
+import net.minestom.server.particle.Particle;
+import net.minestom.server.timer.Task;
+import net.minestom.server.timer.TaskSchedule;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class CollisionArea {
@@ -13,6 +26,9 @@ public class CollisionArea {
     private final Vec min;
     private final Vec max;
     private final Set<Player> players = new HashSet<>();
+    private final Vec center;
+    private Task cubeTask;
+    private final Entity text = new Entity(EntityType.TEXT_DISPLAY);
 
     public CollisionArea(Vec start, Vec end) {
         this.min = new Vec(
@@ -25,6 +41,18 @@ public class CollisionArea {
                 Math.max(start.y(), end.y()),
                 Math.max(start.z(), end.z())
         );
+        center = new Vec(
+                (min.x() + max.x()) / 2,
+                (min.y() + max.y()) / 2,
+                (min.z() + max.z()) / 2
+        );
+        text.setInvisible(true);
+        text.teleport(center.asPosition());
+        TextDisplayMeta meta = ((TextDisplayMeta) text.getEntityMeta());
+        meta.setText(Component.text(CollisionHandler.areas.getKey(this)));
+        meta.setAlignment(TextDisplayMeta.Alignment.CENTER);
+        meta.setSeeThrough(true);
+        meta.setShadow(true);
     }
 
     public boolean isInArea(Player player) {
@@ -38,6 +66,41 @@ public class CollisionArea {
         } else {
             return false;
         }
+    }
+
+    private void sendCubePackets(PacketReceiver receiver, Vec min, Vec max) {
+        // Draw all 12 edges of the cube
+        // Bottom square
+        PacketSender.sendPackets(receiver, new Vec(min.x(), min.y(), min.z()), new Vec(max.x(), min.y(), min.z()));
+        PacketSender.sendPackets(receiver, new Vec(max.x(), min.y(), min.z()), new Vec(max.x(), min.y(), max.z()));
+        PacketSender.sendPackets(receiver, new Vec(max.x(), min.y(), max.z()), new Vec(min.x(), min.y(), max.z()));
+        PacketSender.sendPackets(receiver, new Vec(min.x(), min.y(), max.z()), new Vec(min.x(), min.y(), min.z()));
+
+        // Top square
+        PacketSender.sendPackets(receiver, new Vec(min.x(), max.y(), min.z()), new Vec(max.x(), max.y(), min.z()));
+        PacketSender.sendPackets(receiver, new Vec(max.x(), max.y(), min.z()), new Vec(max.x(), max.y(), max.z()));
+        PacketSender.sendPackets(receiver, new Vec(max.x(), max.y(), max.z()), new Vec(min.x(), max.y(), max.z()));
+        PacketSender.sendPackets(receiver, new Vec(min.x(), max.y(), max.z()), new Vec(min.x(), max.y(), min.z()));
+
+        // Vertical edges
+        PacketSender.sendPackets(receiver, new Vec(min.x(), min.y(), min.z()), new Vec(min.x(), max.y(), min.z()));
+        PacketSender.sendPackets(receiver, new Vec(max.x(), min.y(), min.z()), new Vec(max.x(), max.y(), min.z()));
+        PacketSender.sendPackets(receiver, new Vec(max.x(), min.y(), max.z()), new Vec(max.x(), max.y(), max.z()));
+        PacketSender.sendPackets(receiver, new Vec(min.x(), min.y(), max.z()), new Vec(min.x(), max.y(), max.z()));
+    }
+
+    public void show(Player player) {
+        text.setInvisible(false);
+        MapExtender<Particle, List<Player>> receiver = new HashMapExtender<>();
+        receiver.put(Particle.WHITE_ASH, List.of(player));
+        cubeTask = Nimoh.scheduler.scheduleTask(() -> {
+            sendCubePackets(new PacketReceiver(receiver), this.min, this.max);
+        }, TaskSchedule.tick(1), TaskSchedule.tick(1));
+    }
+
+    public void hide() {
+        text.setInvisible(true);
+        cubeTask.cancel();
     }
 
     public void removePlayer(Player player) {
