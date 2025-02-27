@@ -4,6 +4,7 @@ import io.jadiefication.Nimoh;
 import io.jadiefication.event.PlayerCollideEvent;
 import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.particlegenerator.packets.PacketSender;
+import io.jadiefication.permission.PermissionablePlayer;
 import net.jadiefication.map.HashMapExtender;
 import net.jadiefication.map.MapExtender;
 import net.kyori.adventure.text.Component;
@@ -98,7 +99,7 @@ public class CollisionArea {
         }, TaskSchedule.tick(1), TaskSchedule.tick(1));
     }
 
-    public void hide() {
+    public void hide(Player player) {
         text.setInvisible(true);
         cubeTask.cancel();
     }
