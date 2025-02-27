@@ -55,7 +55,7 @@ public interface PermissionSQLHandler {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     try {
-                        permissions.add(Permissions.valueOf(resultSet.getString("permissions")));
+                        permissions.add(Permissions.valueOf(resultSet.getString("permission")));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -78,7 +78,7 @@ public interface PermissionSQLHandler {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     try {
-                        permissions.add(Permissions.valueOf(resultSet.getString("permissions")));
+                        permissions.add(Permissions.valueOf(resultSet.getString("permission")));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
