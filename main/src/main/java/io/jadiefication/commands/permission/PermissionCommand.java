@@ -2,7 +2,6 @@ package io.jadiefication.commands.permission;
 
 import io.jadiefication.commands.Action;
 import io.jadiefication.commands.CommandLogic;
-import io.jadiefication.commands.arguments.CustomArgumentTypes;
 import io.jadiefication.commands.timecommand.Time;
 import io.jadiefication.core.data.player.UUIDFetcher;
 import io.jadiefication.permission.PermissionHandler;
@@ -31,19 +30,19 @@ public class PermissionCommand extends Command implements CommandLogic {
 
         var action = ArgumentType.Enum("action", PermissionAction.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
         var username = ArgumentType.String("player");
-        var permission = CustomArgumentTypes.Record("permission", Permissions.class);
+        var permission = ArgumentType.Enum("permission", Permissions.class).setFormat(ArgumentEnum.Format.LOWER_CASED);
 
         defaultExecutor(this);
 
-        argumentCallbacks(new Argument[]{action, permission});
+        argumentCallbacks(new Argument[]{action, permission, username});
 
         addSyntax((sender, context) -> {
             final PermissionAction doAction = context.get(action);
             final String inputUsername = context.get(username);
-            final RecordComponent _permission = context.get(permission);
+            final Permissions _permission = context.get(permission);
             if (sender instanceof PermissionablePlayer _player) {
 
-                if (_player.hasPermission(Permissions.getPermission("OP"))) {
+                if (_player.hasPermission(Permissions.OP)) {
                     PermissionablePlayer player = (PermissionablePlayer) MinecraftServer.getConnectionManager().findOnlinePlayer(inputUsername);
                     if (player == null) {
                         UUID playerUUID = UUIDFetcher.getUUID(inputUsername);
@@ -61,15 +60,15 @@ public class PermissionCommand extends Command implements CommandLogic {
                         }, new GameProfile(playerUUID, inputUsername)));
 
                         if (doAction.equals(PermissionAction.ADD)) {
-                            PermissionSQLHandler.addPermission(offlinePlayer, Permissions.getPermission(_permission.getName()));
+                            PermissionSQLHandler.addPermission(offlinePlayer, _permission);
                         } else if (doAction.equals(PermissionAction.DELETE)) {
-                            PermissionSQLHandler.removePermission(offlinePlayer, Permissions.getPermission(_permission.getName()));
+                            PermissionSQLHandler.removePermission(offlinePlayer, _permission);
                         }
                     } else {
                         if (doAction.equals(PermissionAction.ADD)) {
-                            PermissionHandler.addPermission(player, Permissions.getPermission(_permission.getName()));
+                            PermissionHandler.addPermission(player, _permission);
                         } else if (doAction.equals(PermissionAction.DELETE)) {
-                            PermissionHandler.removePermission(player, Permissions.getPermission(_permission.getName()));
+                            PermissionHandler.removePermission(player, _permission);
                         }
                     }
                 }

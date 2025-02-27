@@ -13,7 +13,7 @@ public class StopCommand extends Command {
 
         setDefaultExecutor((sender, context) -> {
             if (sender instanceof PermissionablePlayer player) {
-                if (player.hasPermission(Permissions.getPermission("STOP"))) MinecraftServer.stopCleanly();
+                if (player.hasPermission(Permissions.STOP)) MinecraftServer.stopCleanly();
                 else player.sendMessage(Component.text("§4§lNo permission"));
             } else {
                 MinecraftServer.stopCleanly();

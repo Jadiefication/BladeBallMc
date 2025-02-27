@@ -27,7 +27,7 @@ public class TimeCommand extends Command implements CommandLogic {
             final Time time = context.get(type);
             if (sender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permissions.getPermission("TIME"))) {
+                if (player.hasPermission(Permissions.TIME)) {
                     if (doAction.equals(Action.SET)) player.getInstance().setTime(time.getTicks());
                 }
             } else {

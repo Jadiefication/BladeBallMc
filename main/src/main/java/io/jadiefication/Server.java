@@ -72,7 +72,7 @@ public sealed interface Server permits Nimoh {
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand(), new PermissionCommand());
+                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand());
 
         for (Command command : commands) {
             manager.register(command);

@@ -14,7 +14,7 @@ public class StopBallCommand extends Command {
         setDefaultExecutor((sender, context) -> {
             try {
                 PermissionablePlayer player = (PermissionablePlayer) sender;
-                if (player.hasPermission(Permissions.getPermission("START"))) {
+                if (player.hasPermission(Permissions.START)) {
                     BallHandler.BallState.task.cancel();
                     Nimoh.updateTask.cancel();
                 }

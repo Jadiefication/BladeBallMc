@@ -26,7 +26,7 @@ public class WeatherCommand extends Command implements CommandLogic {
             final WeatherEnum weather = context.get(type);
             if (sender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permissions.getPermission("WEATHER"))) {
+                if (player.hasPermission(Permissions.WEATHER)) {
                     if (doAction.equals(Action.SET)) player.getInstance().setWeather(weather.getWeather());
                 }
             } else {

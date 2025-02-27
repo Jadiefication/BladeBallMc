@@ -15,7 +15,7 @@ public class DebugCommand extends Command {
             PermissionablePlayer player;
             try {
                 player = (PermissionablePlayer) sender;
-                if (player.hasPermission(Permissions.getPermission("OP"))) player.openInventory(new DebugGui());
+                if (player.hasPermission(Permissions.OP)) player.openInventory(new DebugGui());
             } catch (ClassCastException e) {
                 sender.sendMessage(Component.text("§4§lOnly a player can run this command"));
             }

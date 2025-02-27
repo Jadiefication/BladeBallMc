@@ -24,7 +24,7 @@ public class OpCommand extends Command implements CommandLogic {
             final Player target = finder.findFirstPlayer(commandSender);
             if (commandSender instanceof PermissionablePlayer player) {
 
-                if (player.hasPermission(Permissions.getPermission("OP"))) {
+                if (player.hasPermission(Permissions.OP)) {
                     if (target != null) {
                         target.setPermissionLevel(4);
                     } else {
@@ -43,7 +43,7 @@ public class OpCommand extends Command implements CommandLogic {
         }, userName);
 
         addSyntax((commandSender, context) -> {
-            if (commandSender instanceof PermissionablePlayer player && (player.getPermissionLevel() == 4 || player.hasPermission(Permissions.getPermission("OP")))) {
+            if (commandSender instanceof PermissionablePlayer player && (player.getPermissionLevel() == 4 || player.hasPermission(Permissions.OP))) {
                 player.setPermissionLevel(4);
             }
         });

@@ -57,7 +57,7 @@ public class ParticleCommand extends Command implements CommandLogic {
         var durationOfShape = context.get(duration);
 
         if (sender instanceof PermissionablePlayer player) {
-            if (player.hasPermission(Permissions.getPermission("PARTICLE_SHAPE"))) {
+            if (player.hasPermission(Permissions.PARTICLE_SHAPE)) {
                 if (is3D) ParticleBuilder.build(spawnShape, player.getPosition(), spawnRadiusX, spawnRadiusY, spawnRadiusZ, new PacketReceiver(player.getInstance(), particleType), durationOfShape);
                 else ParticleBuilder.build(spawnShape, player.getPosition(), spawnRadiusX, spawnRadiusY, new PacketReceiver(player.getInstance(), particleType), durationOfShape);
             } else {

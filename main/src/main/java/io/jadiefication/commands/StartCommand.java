@@ -13,7 +13,7 @@ public class StartCommand extends Command
         setDefaultExecutor((sender, context) -> {
             try {
                 PermissionablePlayer player = (PermissionablePlayer) sender;
-                if (player.hasPermission(Permissions.getPermission("START"))) Nimoh.startBladeBall();
+                if (player.hasPermission(Permissions.START)) Nimoh.startBladeBall();
             } catch (ClassCastException e) {
                 Nimoh.startBladeBall();
             }
