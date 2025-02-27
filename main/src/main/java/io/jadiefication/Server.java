@@ -1,6 +1,7 @@
 package io.jadiefication;
 
 import io.jadiefication.commands.*;
+import io.jadiefication.commands.collision.CollisionCommand;
 import io.jadiefication.commands.collision.visibility.HideCommand;
 import io.jadiefication.commands.collision.visibility.ShowCommand;
 import io.jadiefication.commands.debug.DebugCommand;
@@ -80,7 +81,8 @@ public sealed interface Server permits Nimoh {
     static void registerCommands() {
         CommandManager manager = MinecraftServer.getCommandManager();
         List<Command> commands = List.of(new OpCommand(), new GamemodeCommand(), new StopCommand(), new TimeCommand(), new WeatherCommand(), new FillCommand(),
-                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand(), new PermissionCommand(), new ShowCommand(), new HideCommand());
+                new ParticleCommand(), new DebugCommand(), new StartCommand(), new StopBallCommand(), new PermissionCommand(), new ShowCommand(), new HideCommand(),
+                new CollisionCommand());
 
         for (Command command : commands) {
             manager.register(command);
