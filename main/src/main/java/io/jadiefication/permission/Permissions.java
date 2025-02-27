@@ -1,7 +1,5 @@
 package io.jadiefication.permission;
 
-import java.util.*;
-
 public enum Permissions {
 
     OP,

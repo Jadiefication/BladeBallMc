@@ -1,8 +1,6 @@
 package io.jadiefication.commands.permission;
 
-import io.jadiefication.commands.Action;
 import io.jadiefication.commands.CommandLogic;
-import io.jadiefication.commands.timecommand.Time;
 import io.jadiefication.core.data.player.UUIDFetcher;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.PermissionablePlayer;
@@ -19,7 +17,6 @@ import net.minestom.server.network.player.GameProfile;
 import net.minestom.server.network.player.PlayerConnection;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.RecordComponent;
 import java.net.SocketAddress;
 import java.util.UUID;
 

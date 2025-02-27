@@ -2,13 +2,11 @@ package io.jadiefication;
 
 import io.jadiefication.commands.*;
 import io.jadiefication.commands.debug.DebugCommand;
-import io.jadiefication.commands.permission.PermissionCommand;
 import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
 import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.eventfunctions.EventFunction;
 import io.jadiefication.permission.PermissionHandler;
-import io.jadiefication.permission.PermissionableGroup;
 import io.jadiefication.permission.sql.PermissionSQLHandler;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
