@@ -295,4 +295,8 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         return player.equals(homedUponPlayer);
     }
 
+    public static boolean isInMatch(Player player) {
+        return mainMatch.getPlayers().contains(((PermissionablePlayer) player));
+    }
+
 }
