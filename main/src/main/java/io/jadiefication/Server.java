@@ -9,6 +9,7 @@ import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.eventfunctions.EventFunction;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.sql.PermissionSQLHandler;
+import io.jadiefication.util.game.prestart.collision.CollisionItem;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;
@@ -96,7 +97,9 @@ public sealed interface Server permits Nimoh {
                 Map.entry(InventoryOpenEvent.class, (Consumer<InventoryOpenEvent>) EventFunction::onInventoryOpen),
                 Map.entry(PlayerSpawnEvent.class, (Consumer<PlayerSpawnEvent>) EventFunction::onWorldJoin),
                 Map.entry(InventoryCloseEvent.class, (Consumer<InventoryCloseEvent>) EventFunction::onInventoryClose),
-                Map.entry(PlayerBeginItemUseEvent.class, (Consumer<PlayerBeginItemUseEvent>) EventFunction::onItemBlock)
+                Map.entry(PlayerBeginItemUseEvent.class, (Consumer<PlayerBeginItemUseEvent>) EventFunction::onItemBlock),
+                Map.entry(PlayerStartDiggingEvent.class, (Consumer<PlayerStartDiggingEvent>) CollisionItem::onLeftClick),
+                Map.entry(PlayerBlockInteractEvent.class, (Consumer<PlayerBlockInteractEvent>) CollisionItem::onRightClick)
         );
 
         for (Map.Entry<Class<? extends Event>, Consumer<? extends Event>> entry : events.entrySet()) {
