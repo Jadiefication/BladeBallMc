@@ -93,7 +93,13 @@ public class CollisionArea {
     }
 
     public void show(Player player) {
+        text.setNoGravity(true);
+        text.setInstance(Nimoh.instanceContainer);
+        text.teleport(center.asPosition());
         TextDisplayMeta meta = ((TextDisplayMeta) text.getEntityMeta());
+        meta.setAlignment(TextDisplayMeta.Alignment.CENTER);
+        meta.setSeeThrough(true);
+        meta.setShadow(true);
         meta.setText(Component.text("§4§l" + CollisionHandler.areas.getKey(this)));
         text.setInvisible(false);
         MapExtender<Particle, List<Player>> receiver = new HashMapExtender<>();
@@ -104,7 +110,7 @@ public class CollisionArea {
     }
 
     public void hide() {
-        text.setInvisible(true);
+        text.remove();
         cubeTask.cancel();
     }
 
