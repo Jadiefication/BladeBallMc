@@ -38,6 +38,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public sealed interface Server permits Nimoh {
 
@@ -61,19 +63,65 @@ public sealed interface Server permits Nimoh {
     }
 
     static void shutdownBuilder(InstanceManager manager) {
-
         MinecraftServer.getSchedulerManager().buildShutdownTask(() -> {
-            PermissionHandler.groupPermissions.forEach((group, p) -> PermissionSQLHandler.setPermissions(group));
-            manager.getInstances().forEach(instance -> {
-                instance.sendMessage(Component.text("§4§lServer shutting down"));
-            });
-            manager.getInstances().forEach(Instance::saveChunksToStorage);
+            System.out.println("Starting server shutdown sequence...");
+            
+            // Save permissions first
             try {
-                Nimoh.connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+                PermissionHandler.groupPermissions.forEach((group, p) -> 
+                    PermissionSQLHandler.setPermissions(group));
+            } catch (Exception e) {
+                System.err.println("Failed to save permissions: " + e.getMessage());
             }
-            System.out.println("Saving chunks...");
+
+            // Notify players
+            manager.getInstances().forEach(instance -> 
+                instance.sendMessage(Component.text("§4§lServer shutting down")));
+
+            // Save world data
+            System.out.println("Saving world data...");
+            CountDownLatch saveLatch = new CountDownLatch(manager.getInstances().size());
+            
+            manager.getInstances().forEach(instance -> {
+                try {
+                    System.out.println("Saving instance: " + instance.getUniqueId());
+                    instance.saveChunksToStorage().thenRun(() -> {
+                        System.out.println("Successfully saved instance: " + instance.getUniqueId());
+                        saveLatch.countDown();
+                    }).exceptionally(throwable -> {
+                        System.err.println("Failed to save instance " + instance.getUniqueId() + 
+                            ": " + throwable.getMessage());
+                        saveLatch.countDown();
+                        return null;
+                    });
+                } catch (Exception e) {
+                    System.err.println("Error during save of instance " + instance.getUniqueId() + 
+                        ": " + e.getMessage());
+                    saveLatch.countDown();
+                }
+            });
+
+            // Wait for all saves to complete (with timeout)
+            try {
+                if (!saveLatch.await(30, TimeUnit.SECONDS)) {
+                    System.err.println("World save timed out after 30 seconds!");
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                System.err.println("World save was interrupted!");
+            }
+
+            // Close database connection last
+            try {
+                if (Nimoh.connection != null && !Nimoh.connection.isClosed()) {
+                    Nimoh.connection.close();
+                    System.out.println("Database connection closed successfully");
+                }
+            } catch (SQLException e) {
+                System.err.println("Failed to close database connection: " + e.getMessage());
+            }
+
+            System.out.println("Server shutdown sequence completed");
         });
     }
 
