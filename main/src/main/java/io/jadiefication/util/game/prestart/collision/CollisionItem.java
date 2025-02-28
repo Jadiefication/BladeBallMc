@@ -28,6 +28,7 @@ public abstract class CollisionItem {
                 .withCustomName(item.title())
                 .withLore(item.lore())
                 .withCustomModelData(item.customModelData()))) {
+            event.getPlayer().sendMessage("Works");
             start = event.getBlockPosition().asVec();
         }
     }
@@ -37,6 +38,7 @@ public abstract class CollisionItem {
                 .withCustomName(item.title())
                 .withLore(item.lore())
                 .withCustomModelData(item.customModelData()))) {
+            event.getPlayer().sendMessage("Works2");
             end = event.getBlockPosition().asVec();
         }
     }

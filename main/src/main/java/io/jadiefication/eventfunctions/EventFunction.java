@@ -5,6 +5,7 @@ import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.commands.debug.gui.DebugGui;
 import io.jadiefication.permission.PermissionHandler;
+import io.jadiefication.util.game.prestart.collision.CollisionItem;
 import io.jadiefication.util.game.start.ball.BallHandler;
 import io.jadiefication.util.game.start.ball.BladeBall;
 import io.jadiefication.util.data.player.PlayerDataHandler;
@@ -44,6 +45,14 @@ public abstract class EventFunction implements PlayerDataHandler {
     public static void onBreak(PlayerBlockBreakEvent event) {
         ItemStack item = ItemStack.builder(Objects.requireNonNull(event.getBlock().registry().material())).build();
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
+        if (player.getItemInMainHand().equals(CollisionItem.item.item()
+                .withCustomName(CollisionItem.item.title())
+                .withLore(CollisionItem.item.lore())
+                .withCustomModelData(CollisionItem.item.customModelData()))) {
+            event.setCancelled(true);
+            EventDispatcher.call(new PlayerStartDiggingEvent(player, event.getBlock(), event.getBlockPosition(), event.getBlockFace()));
+            return; // Allow the CollisionItem handlers to process it
+        }
         if (player.hasPermission(Permissions.BREAK) && !player.getGameMode().equals(GameMode.ADVENTURE)) {
             if (player.getGameMode().equals(GameMode.CREATIVE)) return;
             player.getInventory().addItemStack(item);
@@ -105,8 +114,13 @@ public abstract class EventFunction implements PlayerDataHandler {
                 Block.BELL, Block.GRINDSTONE, Block.LOOM, Block.STONECUTTER
         );
 
-
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
+        if (player.getItemInMainHand().equals(CollisionItem.item.item()
+                .withCustomName(CollisionItem.item.title())
+                .withLore(CollisionItem.item.lore())
+                .withCustomModelData(CollisionItem.item.customModelData()))) {
+            return; // Allow the CollisionItem handlers to process it
+        }
         Block block = event.getBlock();
         BlockFace face = event.getBlockFace();
         Vec direction = player.getPosition().direction();

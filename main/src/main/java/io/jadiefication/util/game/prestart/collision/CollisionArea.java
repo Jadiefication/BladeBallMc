@@ -48,6 +48,7 @@ public class CollisionArea {
                 (min.z() + max.z()) / 2
         );
         text.setInvisible(true);
+        text.setInstance(Nimoh.instanceContainer);
         text.teleport(center.asPosition());
         TextDisplayMeta meta = ((TextDisplayMeta) text.getEntityMeta());
         meta.setText(Component.text(CollisionHandler.areas.getKey(this)));
