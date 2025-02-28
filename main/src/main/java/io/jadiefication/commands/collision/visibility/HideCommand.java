@@ -15,7 +15,7 @@ public class HideCommand extends Command {
         setDefaultExecutor((sender, context) -> {
             if (sender instanceof PermissionablePlayer player) {
                 if (player.hasPermission(Permissions.OP)) {
-                    CollisionHandler.areas.getValues().forEach(area -> area.hide(player));
+                    CollisionHandler.areas.getValues().forEach(area -> area.hide());
                 }
             }
         });

@@ -39,7 +39,12 @@ public abstract class CollisionItem {
                 .withLore(item.lore())
                 .withCustomModelData(item.customModelData()))) {
             event.getPlayer().sendMessage("Works2");
-            end = event.getBlockPosition().asVec();
+            Vec blockPos = event.getBlockPosition().asVec();
+            end = new Vec(
+                    blockPos.x() + 1,
+                    blockPos.y() + 1,
+                    blockPos.z() + 1
+            );
         }
     }
 

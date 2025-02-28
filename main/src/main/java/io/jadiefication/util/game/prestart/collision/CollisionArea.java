@@ -48,13 +48,14 @@ public class CollisionArea {
                 (min.z() + max.z()) / 2
         );
         text.setInvisible(true);
+        text.setNoGravity(true);
         text.setInstance(Nimoh.instanceContainer);
         text.teleport(center.asPosition());
         TextDisplayMeta meta = ((TextDisplayMeta) text.getEntityMeta());
-        meta.setText(Component.text(CollisionHandler.areas.getKey(this)));
         meta.setAlignment(TextDisplayMeta.Alignment.CENTER);
         meta.setSeeThrough(true);
         meta.setShadow(true);
+
     }
 
     public boolean isInArea(Player player) {
@@ -92,15 +93,17 @@ public class CollisionArea {
     }
 
     public void show(Player player) {
+        TextDisplayMeta meta = ((TextDisplayMeta) text.getEntityMeta());
+        meta.setText(Component.text("§4§l" + CollisionHandler.areas.getKey(this)));
         text.setInvisible(false);
         MapExtender<Particle, List<Player>> receiver = new HashMapExtender<>();
-        receiver.put(Particle.WHITE_ASH, List.of(player));
+        receiver.put(Particle.WAX_OFF, List.of(player));
         cubeTask = Nimoh.scheduler.scheduleTask(() -> {
             sendCubePackets(new PacketReceiver(receiver), this.min, this.max);
         }, TaskSchedule.tick(1), TaskSchedule.tick(1));
     }
 
-    public void hide(Player player) {
+    public void hide() {
         text.setInvisible(true);
         cubeTask.cancel();
     }
