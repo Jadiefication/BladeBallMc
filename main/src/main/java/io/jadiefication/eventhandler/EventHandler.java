@@ -1,10 +1,9 @@
-package io.jadiefication.eventfunctions;
+package io.jadiefication.eventhandler;
 
 import io.jadiefication.AbilitiesHolder;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.commands.debug.gui.DebugGui;
-import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.util.game.prestart.collision.CollisionItem;
 import io.jadiefication.util.game.start.ball.BallHandler;
 import io.jadiefication.util.game.start.ball.BladeBall;
@@ -40,7 +39,7 @@ import net.minestom.server.timer.TaskSchedule;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class EventFunction implements PlayerDataHandler {
+public abstract class EventHandler implements PlayerDataHandler {
 
     public static void onBreak(PlayerBlockBreakEvent event) {
         ItemStack item = ItemStack.builder(Objects.requireNonNull(event.getBlock().registry().material())).build();
@@ -187,6 +186,11 @@ public abstract class EventFunction implements PlayerDataHandler {
                 event.setCancelled(true);
                 player.sendMessage(Component.text("Testing enabled"));
                 Nimoh.testing = true;
+                return;
+            } else if (item.equals(DebugGui.collider)) {
+                player.getInventory().addItemStack(DebugGui.collider);
+                event.setCancelled(true);
+                return;
             }
         }
         if (inventory instanceof AbilitySelectionMenu) {

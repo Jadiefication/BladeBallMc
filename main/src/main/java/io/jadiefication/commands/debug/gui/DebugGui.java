@@ -1,5 +1,6 @@
 package io.jadiefication.commands.debug.gui;
 
+import io.jadiefication.util.game.prestart.collision.CollisionItem;
 import io.jadiefication.util.gui.Border;
 import io.jadiefication.util.gui.Heads;
 import io.jadiefication.customitem.CustomItem;
@@ -29,6 +30,10 @@ public class DebugGui extends Inventory {
     private static final Map<UUID, Task> activeTasks = new HashMap<>();
     private static final Map<UUID, BossBar> activeBossBars = new HashMap<>();
     public static final AtomicInteger j = new AtomicInteger();
+    public static final ItemStack collider = CollisionItem.item.item()
+            .withCustomName(CollisionItem.item.title())
+            .withLore(CollisionItem.item.lore())
+            .withCustomModelData(CollisionItem.item.customModelData());
 
     public static ItemStack createPerformanceCheckerItem() {
         return CustomItem.registerItem(
@@ -85,6 +90,7 @@ public class DebugGui extends Inventory {
         List<Material> items = List.of(Material.BARRIER, Material.COMMAND_BLOCK, Material.STRUCTURE_VOID, Material.LIGHT, Material.REPEATING_COMMAND_BLOCK);
         Border.setInventoryBorder(this);
         setItemStack(40, createPerformanceCheckerItem());
+        setItemStack(41, collider);
         for (int i = 0; i < items.size(); i++) {
             setItemStack(i + 10, ItemStack.of(items.get(i)));
         }

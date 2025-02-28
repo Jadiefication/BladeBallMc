@@ -9,7 +9,7 @@ import io.jadiefication.commands.permission.PermissionCommand;
 import io.jadiefication.commands.timecommand.TimeCommand;
 import io.jadiefication.commands.weathercommand.WeatherCommand;
 import io.jadiefication.customitem.CustomItem;
-import io.jadiefication.eventfunctions.EventFunction;
+import io.jadiefication.eventhandler.EventHandler;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.sql.PermissionSQLHandler;
 import io.jadiefication.util.game.prestart.collision.CollisionItem;
@@ -28,7 +28,6 @@ import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.PlayerBeginItemUseEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
-import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.InstanceManager;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
@@ -139,17 +138,17 @@ public sealed interface Server permits Nimoh {
 
     static void implementListeners(GlobalEventHandler handler) {
         Map<Class<? extends Event>, Consumer<? extends Event>> events = Map.ofEntries(
-                Map.entry(AsyncPlayerConfigurationEvent.class, (Consumer<AsyncPlayerConfigurationEvent>) EventFunction::onJoin),
-                Map.entry(PlayerBlockBreakEvent.class, (Consumer<PlayerBlockBreakEvent>) EventFunction::onBreak),
-                Map.entry(PlayerBlockPlaceEvent.class, (Consumer<PlayerBlockPlaceEvent>) EventFunction::onPlace),
-                Map.entry(ServerListPingEvent.class, (Consumer<ServerListPingEvent>) EventFunction::onPing),
-                Map.entry(InventoryPreClickEvent.class, (Consumer<InventoryPreClickEvent>) EventFunction::onInventoryClick),
-                Map.entry(PlayerUseItemEvent.class, (Consumer<PlayerUseItemEvent>) EventFunction::onItemUse),
-                Map.entry(PlayerDisconnectEvent.class, (Consumer<PlayerDisconnectEvent>) EventFunction::onLeave),
-                Map.entry(InventoryOpenEvent.class, (Consumer<InventoryOpenEvent>) EventFunction::onInventoryOpen),
-                Map.entry(PlayerSpawnEvent.class, (Consumer<PlayerSpawnEvent>) EventFunction::onWorldJoin),
-                Map.entry(InventoryCloseEvent.class, (Consumer<InventoryCloseEvent>) EventFunction::onInventoryClose),
-                Map.entry(PlayerBeginItemUseEvent.class, (Consumer<PlayerBeginItemUseEvent>) EventFunction::onItemBlock),
+                Map.entry(AsyncPlayerConfigurationEvent.class, (Consumer<AsyncPlayerConfigurationEvent>) EventHandler::onJoin),
+                Map.entry(PlayerBlockBreakEvent.class, (Consumer<PlayerBlockBreakEvent>) EventHandler::onBreak),
+                Map.entry(PlayerBlockPlaceEvent.class, (Consumer<PlayerBlockPlaceEvent>) EventHandler::onPlace),
+                Map.entry(ServerListPingEvent.class, (Consumer<ServerListPingEvent>) EventHandler::onPing),
+                Map.entry(InventoryPreClickEvent.class, (Consumer<InventoryPreClickEvent>) EventHandler::onInventoryClick),
+                Map.entry(PlayerUseItemEvent.class, (Consumer<PlayerUseItemEvent>) EventHandler::onItemUse),
+                Map.entry(PlayerDisconnectEvent.class, (Consumer<PlayerDisconnectEvent>) EventHandler::onLeave),
+                Map.entry(InventoryOpenEvent.class, (Consumer<InventoryOpenEvent>) EventHandler::onInventoryOpen),
+                Map.entry(PlayerSpawnEvent.class, (Consumer<PlayerSpawnEvent>) EventHandler::onWorldJoin),
+                Map.entry(InventoryCloseEvent.class, (Consumer<InventoryCloseEvent>) EventHandler::onInventoryClose),
+                Map.entry(PlayerBeginItemUseEvent.class, (Consumer<PlayerBeginItemUseEvent>) EventHandler::onItemBlock),
                 Map.entry(PlayerStartDiggingEvent.class, (Consumer<PlayerStartDiggingEvent>) CollisionItem::onLeftClick),
                 Map.entry(PlayerBlockInteractEvent.class, (Consumer<PlayerBlockInteractEvent>) CollisionItem::onRightClick)
         );
