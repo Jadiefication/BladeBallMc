@@ -162,7 +162,7 @@ public abstract class EventHandler implements PlayerDataHandler {
         Optional<List<Block>> blockO = functions.getKeys().stream().filter(blockL -> blockL.contains(event.getBlock())).findAny();
         if (blockO.isPresent()) {
             List<Block> blocks = blockO.get();
-            functions.get(blocks).apply(event.getBlock(), event);
+            event.setBlock(functions.get(blocks).apply(event.getBlock(), event));
         }
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
         if (player.getItemInMainHand().equals(CollisionItem.item.item()
