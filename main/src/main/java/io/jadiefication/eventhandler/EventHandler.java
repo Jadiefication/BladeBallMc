@@ -4,6 +4,7 @@ import io.jadiefication.AbilitiesHolder;
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
 import io.jadiefication.commands.debug.gui.DebugGui;
+import io.jadiefication.eventhandler.block.BlockFunctions;
 import io.jadiefication.util.game.prestart.collision.CollisionItem;
 import io.jadiefication.util.game.start.ball.BallHandler;
 import io.jadiefication.util.game.start.ball.BladeBall;
@@ -16,6 +17,8 @@ import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
 import io.jadiefication.permission.sql.PermissionSQLHandler;
+import net.jadiefication.map.HashMapExtender;
+import net.jadiefication.map.MapExtender;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
@@ -40,6 +43,7 @@ import net.minestom.server.timer.TaskSchedule;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -148,6 +152,18 @@ public abstract class EventHandler implements PlayerDataHandler {
                 Block.BLACKSTONE_WALL, Block.POLISHED_BLACKSTONE_WALL, Block.DEEPSLATE_BRICK_WALL
         );
 
+        MapExtender<List<Block>, BiFunction<Block, PlayerBlockPlaceEvent, Block>> functions = new HashMapExtender<>();
+
+        functions.putAll(Map.of(axisList, BlockFunctions::axis,
+                rotationList, BlockFunctions::rotation, facingList, BlockFunctions::facing, fenceList, BlockFunctions::fence,
+                slabList, BlockFunctions::slab, stairList, BlockFunctions::stair, fenceGateList, BlockFunctions::fenceGate,
+                wallList, BlockFunctions::wall));
+
+        Optional<List<Block>> blockO = functions.getKeys().stream().filter(blockL -> blockL.contains(event.getBlock())).findAny();
+        if (blockO.isPresent()) {
+            List<Block> blocks = blockO.get();
+            functions.get(blocks).apply(event.getBlock(), event);
+        }
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
         if (player.getItemInMainHand().equals(CollisionItem.item.item()
                 .withCustomName(CollisionItem.item.title())
@@ -155,47 +171,7 @@ public abstract class EventHandler implements PlayerDataHandler {
                 .withCustomModelData(CollisionItem.item.customModelData()))) {
             return; // Allow the CollisionItem handlers to process it
         }
-        Block block = event.getBlock();
-        BlockFace face = event.getBlockFace();
-        Vec direction = player.getPosition().direction();
-        Instance instance = event.getInstance();
-
-        String axis;
-        double absX = Math.abs(direction.x());
-        double absY = Math.abs(direction.y());
-        double absZ = Math.abs(direction.z());
-
-        if (absY > absX && absY > absZ) {
-            axis = "y";
-        } else if (absX > absZ) {
-            axis = "x";
-        } else {
-            axis = "z";
-        }
-
-        if (player.hasPermission(Permissions.PLACE) && !player.getGameMode().equals(GameMode.ADVENTURE) && CustomItemHolder.hasItem(player.getItemInMainHand()).isEmpty()) {
-            Block directedBlock;
-            if (axisList.contains(block)) {
-                directedBlock = block.withProperty("axis", axis);
-            } else if (rotationList.contains(block)) {
-                int rotation = (int) ((Math.atan2(direction.z(), direction.x()) * 16.0 / (2 * Math.PI) + 16.5) % 16);
-                directedBlock = block.withProperty("rotation", String.valueOf(rotation));
-            } else if (facingList.contains(block)) {
-                directedBlock = block.withProperty("facing", face.name().toLowerCase());
-            } else if (fenceList.contains(block) || wallList.contains(block)) {
-                directedBlock = block.withProperties(Map.of("east", String.valueOf(instance.getBlock(1, 0, 0).isSolid()),
-                        "west", String.valueOf(instance.getBlock(-1, 0, 0).isSolid()),
-                        "north", String.valueOf(instance.getBlock(0, 0, -1).isSolid()),
-                        "south", String.valueOf(instance.getBlock(0, 0, 1).isSolid())));
-                if (wallList.contains(block)) {
-                    directedBlock = directedBlock.withProperty("up", String.valueOf(wallList.contains(instance.getBlock(0, 1, 0)) ||
-                            wallList.contains(instance.getBlock(0, -1, 0))));
-                }
-            } else {
-                directedBlock = block;
-            }
-            event.setBlock(directedBlock);
-        } else if (CustomItemHolder.hasItem(player.getItemInMainHand()).isPresent()) {
+        if (CustomItemHolder.hasItem(player.getItemInMainHand()).isPresent()) {
             event.setCancelled(true);
             if (AbilitiesHolder.isAbility(player.getItemInMainHand())) {
                 PlayerUseItemEvent e = new PlayerUseItemEvent(player, Objects.requireNonNull(player.getItemUseHand()), player.getItemInMainHand(), 1);
