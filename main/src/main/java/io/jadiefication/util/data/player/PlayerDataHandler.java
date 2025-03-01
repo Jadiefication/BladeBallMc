@@ -222,8 +222,6 @@ public interface PlayerDataHandler extends Handler {
                         insertStatement.setInt(2, player.currencyAmount);
                         insertStatement.executeUpdate();
                     }
-                } finally {
-                    Nimoh.connection.close();
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
