@@ -28,6 +28,7 @@ import net.minestom.server.event.inventory.InventoryPreClickEvent;
 import net.minestom.server.event.item.PlayerBeginItemUseEvent;
 import net.minestom.server.event.player.*;
 import net.minestom.server.event.server.ServerListPingEvent;
+import net.minestom.server.instance.Instance;
 import net.minestom.server.instance.block.Block;
 import net.minestom.server.instance.block.BlockFace;
 import net.minestom.server.inventory.AbstractInventory;
@@ -37,7 +38,11 @@ import net.minestom.server.network.packet.server.play.SetCooldownPacket;
 import net.minestom.server.timer.TaskSchedule;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public abstract class EventHandler implements PlayerDataHandler {
 
@@ -112,6 +117,36 @@ public abstract class EventHandler implements PlayerDataHandler {
                 Block.HOPPER, Block.LANTERN, Block.WALL_TORCH, Block.LEVER, Block.REDSTONE_TORCH, Block.END_ROD,
                 Block.BELL, Block.GRINDSTONE, Block.LOOM, Block.STONECUTTER
         );
+        List<Block> fenceList = List.of(
+                Block.OAK_FENCE, Block.SPRUCE_FENCE, Block.BIRCH_FENCE, Block.JUNGLE_FENCE,
+                Block.ACACIA_FENCE, Block.DARK_OAK_FENCE, Block.MANGROVE_FENCE, Block.BAMBOO_FENCE,
+                Block.CRIMSON_FENCE, Block.WARPED_FENCE
+        );
+        List<Block> slabList = List.of(
+                Block.OAK_SLAB, Block.SPRUCE_SLAB, Block.BIRCH_SLAB, Block.JUNGLE_SLAB,
+                Block.ACACIA_SLAB, Block.DARK_OAK_SLAB, Block.MANGROVE_SLAB, Block.BAMBOO_SLAB,
+                Block.STONE_SLAB, Block.SMOOTH_STONE_SLAB, Block.SANDSTONE_SLAB, Block.COBBLESTONE_SLAB,
+                Block.BRICK_SLAB, Block.NETHER_BRICK_SLAB, Block.QUARTZ_SLAB, Block.RED_SANDSTONE_SLAB,
+                Block.PURPUR_SLAB, Block.BLACKSTONE_SLAB, Block.POLISHED_BLACKSTONE_SLAB, Block.WARPED_SLAB, Block.CRIMSON_SLAB
+        );
+        List<Block> stairList = List.of(
+                Block.OAK_STAIRS, Block.SPRUCE_STAIRS, Block.BIRCH_STAIRS, Block.JUNGLE_STAIRS,
+                Block.ACACIA_STAIRS, Block.DARK_OAK_STAIRS, Block.MANGROVE_STAIRS, Block.BAMBOO_STAIRS,
+                Block.STONE_STAIRS, Block.COBBLESTONE_STAIRS, Block.BRICK_STAIRS, Block.NETHER_BRICK_STAIRS,
+                Block.QUARTZ_STAIRS, Block.RED_SANDSTONE_STAIRS, Block.PURPUR_STAIRS, Block.BLACKSTONE_STAIRS,
+                Block.POLISHED_BLACKSTONE_STAIRS, Block.WARPED_STAIRS, Block.CRIMSON_STAIRS
+        );
+        List<Block> fenceGateList = List.of(
+                Block.OAK_FENCE_GATE, Block.SPRUCE_FENCE_GATE, Block.BIRCH_FENCE_GATE, Block.JUNGLE_FENCE_GATE,
+                Block.ACACIA_FENCE_GATE, Block.DARK_OAK_FENCE_GATE, Block.MANGROVE_FENCE_GATE, Block.BAMBOO_FENCE_GATE,
+                Block.CRIMSON_FENCE_GATE, Block.WARPED_FENCE_GATE
+        );
+        List<Block> wallList = List.of(
+                Block.STONE_BRICK_WALL, Block.COBBLESTONE_WALL, Block.MOSSY_COBBLESTONE_WALL,
+                Block.BRICK_WALL, Block.NETHER_BRICK_WALL, Block.RED_NETHER_BRICK_WALL,
+                Block.SANDSTONE_WALL, Block.RED_SANDSTONE_WALL, Block.PRISMARINE_WALL,
+                Block.BLACKSTONE_WALL, Block.POLISHED_BLACKSTONE_WALL, Block.DEEPSLATE_BRICK_WALL
+        );
 
         PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
         if (player.getItemInMainHand().equals(CollisionItem.item.item()
@@ -123,6 +158,7 @@ public abstract class EventHandler implements PlayerDataHandler {
         Block block = event.getBlock();
         BlockFace face = event.getBlockFace();
         Vec direction = player.getPosition().direction();
+        Instance instance = event.getInstance();
 
         String axis;
         double absX = Math.abs(direction.x());
@@ -146,6 +182,15 @@ public abstract class EventHandler implements PlayerDataHandler {
                 directedBlock = block.withProperty("rotation", String.valueOf(rotation));
             } else if (facingList.contains(block)) {
                 directedBlock = block.withProperty("facing", face.name().toLowerCase());
+            } else if (fenceList.contains(block) || wallList.contains(block)) {
+                directedBlock = block.withProperties(Map.of("east", String.valueOf(instance.getBlock(1, 0, 0).isSolid()),
+                        "west", String.valueOf(instance.getBlock(-1, 0, 0).isSolid()),
+                        "north", String.valueOf(instance.getBlock(0, 0, -1).isSolid()),
+                        "south", String.valueOf(instance.getBlock(0, 0, 1).isSolid())));
+                if (wallList.contains(block)) {
+                    directedBlock = directedBlock.withProperty("up", String.valueOf(wallList.contains(instance.getBlock(0, 1, 0)) ||
+                            wallList.contains(instance.getBlock(0, -1, 0))));
+                }
             } else {
                 directedBlock = block;
             }
