@@ -24,6 +24,21 @@ public interface MapExtender<K, V> extends Map<K, V> {
         return isTrue.get();
     }
 
+    default boolean hasListKey(Object object) throws ValueTypeException {
+        AtomicBoolean isTrue = new AtomicBoolean(false);
+        if (getKeys().stream().anyMatch(key -> key instanceof Collection<?>)) {
+            getKeys().forEach(key -> {
+                Collection<?> keyAsList = ((Collection<?>) key);
+                if (keyAsList.contains(object)) {
+                    isTrue.set(true);
+                }
+            });
+        } else {
+            throw new ValueTypeException();
+        }
+        return isTrue.get();
+    }
+
     default K getKey(Object value) {
         AtomicReference<K> atomicValue = new AtomicReference<K>();
         entrySet().forEach((entry -> {
