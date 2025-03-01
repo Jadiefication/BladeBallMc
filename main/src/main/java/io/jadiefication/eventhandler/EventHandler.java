@@ -177,8 +177,6 @@ public abstract class EventHandler implements PlayerDataHandler {
                 PlayerUseItemEvent e = new PlayerUseItemEvent(player, Objects.requireNonNull(player.getItemUseHand()), player.getItemInMainHand(), 1);
                 EventDispatcher.call(e);
             }
-        } else {
-            event.setCancelled(true);
         }
     }
 
