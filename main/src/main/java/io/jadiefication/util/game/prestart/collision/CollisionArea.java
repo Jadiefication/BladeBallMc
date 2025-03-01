@@ -112,6 +112,7 @@ public class CollisionArea {
     public void hide() {
         text.remove();
         cubeTask.cancel();
+        cubeTask = null;
     }
 
     public void removePlayer(Player player) {

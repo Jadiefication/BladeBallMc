@@ -41,7 +41,7 @@ public abstract non-sealed class Nimoh implements Server, PlayerDataHandler, Abi
     public static InstanceManager instanceManager;
     public static final ExecutorService executorService = Executors.newCachedThreadPool();
     public static String url = "jdbc:sqlite:data/db/data.db";
-    public static boolean testing = false;
+    public static boolean testing = true;
     public static File confFile = new File("server.properties");
     public static String config;
     public static Connection connection;

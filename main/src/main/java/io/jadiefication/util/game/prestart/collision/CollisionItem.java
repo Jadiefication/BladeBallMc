@@ -40,11 +40,7 @@ public abstract class CollisionItem {
                 .withCustomModelData(item.customModelData()))) {
             event.getPlayer().sendMessage("Works2");
             Vec blockPos = event.getBlockPosition().asVec();
-            end = new Vec(
-                    blockPos.x() + 1,
-                    blockPos.y() + 1,
-                    blockPos.z() + 1
-            );
+            end = blockPos.add(1);
         }
     }
 
