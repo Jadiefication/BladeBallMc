@@ -13,10 +13,7 @@ import net.minestom.server.item.Material;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -24,6 +21,7 @@ public interface AbilitiesHolder {
 
     Map<UUID, Long> cooldownMap = new HashMap<>();
     long cooldown = Long.parseLong(Nimoh.config.split("cooldown=")[1].split("\n")[0]);
+    Set<Player> playersOnPlatform = new HashSet<>();
 
     ItemStack dash = CustomItem.registerItem(Component.text("§8§lDash ability"), List.of(Component.text("Use this ability to dash forward")),
             Material.BLACK_STAINED_GLASS_PANE, 1, event -> {
@@ -71,7 +69,7 @@ public interface AbilitiesHolder {
                 }
     });
 
-    ItemStack platform = CustomItem.registerItem(Component.text("§8§lPlatform ability"), List.of(Component.text("Use this ability to raise a platform below you")),
+    ItemStack platform = CustomItem.registerItem(Component.text("§8§lPlatform ability"), List.of(Component.text("Use this ability to raise a platform below you"), Component.text("You cannot move from the platform")),
             Material.BLACK_STAINED_GLASS_PANE, 3, event -> {
                 PlayerUseItemEvent e = ((PlayerUseItemEvent) event);
                 final Player player = e.getPlayer();
@@ -81,6 +79,7 @@ public interface AbilitiesHolder {
                     AtomicInteger heightCounter = new AtomicInteger(1); // Tracks the height built
 
                     Pos initialPosition = player.getPosition(); // Get the player's starting position
+                    playersOnPlatform.add(player);
 
                     Task task = Nimoh.scheduler.scheduleTask(() -> {
                         // Build the current platform below the player
@@ -108,6 +107,7 @@ public interface AbilitiesHolder {
                         Task thisTask = taskRevertReference.get();
                         if (thisTask != null) {
                             thisTask.cancel();
+                            playersOnPlatform.remove(player);
                         }
                         return TaskSchedule.millis(10);
                     }, TaskSchedule.seconds(5));

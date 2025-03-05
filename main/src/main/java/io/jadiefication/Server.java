@@ -150,7 +150,8 @@ public sealed interface Server permits Nimoh {
                 Map.entry(InventoryCloseEvent.class, (Consumer<InventoryCloseEvent>) EventHandler::onInventoryClose),
                 Map.entry(PlayerBeginItemUseEvent.class, (Consumer<PlayerBeginItemUseEvent>) EventHandler::onItemBlock),
                 Map.entry(PlayerStartDiggingEvent.class, (Consumer<PlayerStartDiggingEvent>) CollisionItem::onLeftClick),
-                Map.entry(PlayerBlockInteractEvent.class, (Consumer<PlayerBlockInteractEvent>) CollisionItem::onRightClick)
+                Map.entry(PlayerBlockInteractEvent.class, (Consumer<PlayerBlockInteractEvent>) CollisionItem::onRightClick),
+                Map.entry(PlayerMoveEvent.class, (Consumer<PlayerMoveEvent>) EventHandler::onMove)
         );
 
         for (Map.Entry<Class<? extends Event>, Consumer<? extends Event>> entry : events.entrySet()) {

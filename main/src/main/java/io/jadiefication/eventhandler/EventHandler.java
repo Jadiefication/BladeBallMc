@@ -64,6 +64,12 @@ public abstract class EventHandler implements PlayerDataHandler {
         }
     }
 
+    public static void onMove(PlayerMoveEvent event) {
+        if (AbilitiesHolder.playersOnPlatform.contains(event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
     public static void onJoin(AsyncPlayerConfigurationEvent event) {
         final PermissionablePlayer player = (PermissionablePlayer) event.getPlayer();
 
