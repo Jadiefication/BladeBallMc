@@ -4,6 +4,7 @@ import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
+import net.minestom.server.coordinate.Pos;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.player.PlayerBlockInteractEvent;
 import net.minestom.server.event.player.PlayerStartDiggingEvent;
@@ -27,8 +28,9 @@ public abstract class CollisionItem {
                 .withCustomName(item.title())
                 .withLore(item.lore())
                 .withCustomModelData(item.customModelData()))) {
-            event.getPlayer().sendMessage("Works");
-            start = event.getBlockPosition().asVec();
+            Pos pos = Pos.fromPoint(event.getBlockPosition());
+            event.getPlayer().sendMessage(Component.text("§d§lFirst position set: " + pos.x() + " " + pos.y() + " " + pos.z()));
+            start = pos.asVec();
         }
     }
 
@@ -37,8 +39,9 @@ public abstract class CollisionItem {
                 .withCustomName(item.title())
                 .withLore(item.lore())
                 .withCustomModelData(item.customModelData()))) {
-            event.getPlayer().sendMessage("Works2");
-            Vec blockPos = event.getBlockPosition().asVec();
+            Pos pos = Pos.fromPoint(event.getBlockPosition());
+            event.getPlayer().sendMessage(Component.text("§d§lSecond position set: " + pos.x() + " " + pos.y() + " " + pos.z()));
+            Vec blockPos = pos.asVec();
             end = blockPos.add(1);
         }
     }
