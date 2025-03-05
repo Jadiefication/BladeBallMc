@@ -93,7 +93,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         }
 
         if (!hasPlayer) {
-            CompletableFuture.supplyAsync(() -> BallState.firstTarget ? BallState.findFirstTarget(container) : findTarget(container)).thenAccept(result -> {
+            CompletableFuture.supplyAsync(() -> BallState.firstTarget ? BallState.findFirstTarget(mainMatch) : findTarget(mainMatch)).thenAccept(result -> {
                 synchronized (homedPlayerLock) {
                     homedUponPlayer = result;
                 }
@@ -205,11 +205,11 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
     }
 
     public boolean isPlayerAttached() {
-        return this.hasPlayer;
+        return hasPlayer;
     }
 
     public void setPlayerAttached(boolean hasPlayer) {
-        this.hasPlayer = hasPlayer;
+        BladeBall.hasPlayer = hasPlayer;
     }
 
     private void handleCollision(InstanceContainer container, Player target) {

@@ -22,6 +22,7 @@ import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -56,7 +57,7 @@ public sealed interface BallHandler extends Handler permits BladeBall {
     void start(InstanceContainer container);
 
 
-    default Player findTarget(InstanceContainer container) {
+    default Player findTarget(Match match) {
         double width = 0.6;
         double height = 1.8;
 
@@ -69,9 +70,9 @@ public sealed interface BallHandler extends Handler permits BladeBall {
             double closestDistance = Double.MAX_VALUE;
             boolean foundPlayerInRay = false;
 
-            for (Player player : container.getPlayers()) {
+            for (PermissionablePlayer player : match.getPlayers()) {
                 if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR) ||
-                        (VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM)) && GameTeam.areOnSameTeam((PermissionablePlayer) blockingPlayer, (PermissionablePlayer) player)) continue;
+                        (VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM)) && GameTeam.areOnSameTeam((PermissionablePlayer) blockingPlayer, player)) continue;
 
                 // Calculate player AABB (similar to before)
                 Pos playerPos = player.getPosition();
@@ -118,9 +119,9 @@ public sealed interface BallHandler extends Handler permits BladeBall {
             }
 
             if (!foundPlayerInRay) {
-                for (Player player : container.getPlayers()) {
+                for (PermissionablePlayer player : match.getPlayers()) {
                     if (player.equals(blockingPlayer) || player.getGameMode().equals(GameMode.SPECTATOR) ||
-                            (GameTeam.areOnSameTeam((PermissionablePlayer) blockingPlayer, (PermissionablePlayer) player) && VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM))) continue;
+                            (GameTeam.areOnSameTeam((PermissionablePlayer) blockingPlayer, player) && VoteHandler.Vote.gamemode.equals(VoteGamemode.TEAM))) continue;
 
                     Vec playerPos = player.getPosition().asVec();
 
@@ -158,8 +159,8 @@ public sealed interface BallHandler extends Handler permits BladeBall {
         }, TaskSchedule.tick(1));;
         public static boolean firstTarget = true;
 
-        public static Player findFirstTarget(InstanceContainer container) {
-            Set<Player> players = container.getPlayers();
+        public static Player findFirstTarget(Match match) {
+            List<PermissionablePlayer> players = match.getPlayers();
 
             Player closestPlayer = null;
             double closestDistance = Double.MAX_VALUE;
