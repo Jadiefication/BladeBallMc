@@ -3,6 +3,7 @@ package io.jadiefication.commands.collision;
 import io.jadiefication.commands.CommandLogic;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.game.prestart.collision.CollisionItem;
+import io.jadiefication.permission.Permissions;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
 import net.minestom.server.command.builder.arguments.ArgumentEnum;
@@ -23,15 +24,19 @@ public class CollisionCommand extends Command implements CommandLogic {
             CollisionAction doAction = context.get(action);
             String areaName = context.get(name);
             if (sender instanceof PermissionablePlayer player) {
-                if (doAction.equals(CollisionAction.CREATE)) {
-                    if (CollisionItem.isSelected()) {
-                        CollisionItem.createArea(areaName);
-                    } else {
-
+                if (player.hasPermission(Permissions.OP)) {
+                    if (doAction.equals(CollisionAction.CREATE)) {
+                        if (CollisionItem.isSelected()) {
+                            CollisionItem.createArea(areaName);
+                        } else {
+                            sender.sendMessage(Component.text("§4§lNo area selected"));
+                        }
                     }
                 } else {
                     sender.sendMessage(Component.text("§4§lNo permission"));
                 }
+            } else {
+                sender.sendMessage(Component.text("§4§lOnly players can use this command"));
             }
         }, action, name);
     }
