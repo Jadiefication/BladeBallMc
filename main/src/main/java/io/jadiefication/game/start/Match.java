@@ -1,4 +1,4 @@
-package io.jadiefication.util.game.start;
+package io.jadiefication.game.start;
 
 import io.jadiefication.permission.PermissionablePlayer;
 import net.minestom.server.entity.Player;

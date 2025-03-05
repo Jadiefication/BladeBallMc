@@ -1,6 +1,6 @@
 package io.jadiefication.commands.debug.gui;
 
-import io.jadiefication.util.game.prestart.collision.CollisionItem;
+import io.jadiefication.game.prestart.collision.CollisionItem;
 import io.jadiefication.util.gui.Border;
 import io.jadiefication.util.gui.Heads;
 import io.jadiefication.customitem.CustomItem;

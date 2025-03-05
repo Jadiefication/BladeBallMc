@@ -1,6 +1,6 @@
 package io.jadiefication;
 
-import io.jadiefication.util.game.start.ball.BladeBall;
+import io.jadiefication.game.start.ball.BladeBall;
 import io.jadiefication.util.data.player.PlayerDataHandler;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.PermissionablePlayer;
@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;

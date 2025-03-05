@@ -1,10 +1,10 @@
-package io.jadiefication.util.game.start.ball;
+package io.jadiefication.game.start.ball;
 
 import io.jadiefication.Nimoh;
 import io.jadiefication.util.Handler;
-import io.jadiefication.util.game.start.team.GameTeam;
-import io.jadiefication.util.game.prestart.vote.VoteGamemode;
-import io.jadiefication.util.game.prestart.vote.VoteHandler;
+import io.jadiefication.game.start.team.GameTeam;
+import io.jadiefication.game.prestart.vote.VoteGamemode;
+import io.jadiefication.game.prestart.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
 import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.permission.PermissionablePlayer;

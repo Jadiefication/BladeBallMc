@@ -1,23 +1,13 @@
-package io.jadiefication.util.game.prestart.collision;
+package io.jadiefication.game.prestart.collision;
 
-import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.event.PlayerExitEvent;
 import io.jadiefication.util.Handler;
-import io.jadiefication.util.game.start.ball.BladeBall;
+import io.jadiefication.game.start.ball.BladeBall;
 import net.jadiefication.map.HashMapExtender;
 import net.jadiefication.map.MapExtender;
-import net.kyori.adventure.text.Component;
-import net.minestom.server.MinecraftServer;
 import net.minestom.server.coordinate.Vec;
 import net.minestom.server.event.EventDispatcher;
-import net.minestom.server.event.player.PlayerBlockInteractEvent;
 import net.minestom.server.instance.InstanceContainer;
-import net.minestom.server.item.ItemStack;
-import net.minestom.server.item.Material;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public interface CollisionHandler extends Handler {
 

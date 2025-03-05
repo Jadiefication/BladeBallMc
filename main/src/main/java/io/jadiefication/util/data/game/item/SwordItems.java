@@ -1,6 +1,6 @@
 package io.jadiefication.util.data.game.item;
 
-import io.jadiefication.util.game.start.ball.BladeBall;
+import io.jadiefication.game.start.ball.BladeBall;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.item.Material;
 

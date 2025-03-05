@@ -12,7 +12,7 @@ import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.eventhandler.EventHandler;
 import io.jadiefication.permission.PermissionHandler;
 import io.jadiefication.permission.sql.PermissionSQLHandler;
-import io.jadiefication.util.game.prestart.collision.CollisionItem;
+import io.jadiefication.game.prestart.collision.CollisionItem;
 import net.kyori.adventure.resource.ResourcePackInfo;
 import net.kyori.adventure.resource.ResourcePackRequest;
 import net.kyori.adventure.text.Component;

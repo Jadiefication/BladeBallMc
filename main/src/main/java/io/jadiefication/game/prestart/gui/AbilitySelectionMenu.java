@@ -1,4 +1,4 @@
-package io.jadiefication.util.game.prestart.gui;
+package io.jadiefication.game.prestart.gui;
 
 import io.jadiefication.AbilitiesHolder;
 import io.jadiefication.util.gui.Border;

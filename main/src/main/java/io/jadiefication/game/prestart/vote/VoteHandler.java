@@ -1,4 +1,4 @@
-package io.jadiefication.util.game.prestart.vote;
+package io.jadiefication.game.prestart.vote;
 
 import io.jadiefication.util.Handler;
 import net.minestom.server.instance.InstanceContainer;

@@ -1,4 +1,4 @@
-package io.jadiefication.util.game.start.team;
+package io.jadiefication.game.start.team;
 
 import io.jadiefication.permission.PermissionablePlayer;
 import net.jadiefication.map.HashMapExtender;

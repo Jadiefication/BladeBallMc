@@ -2,14 +2,11 @@ package io.jadiefication.commands.collision;
 
 import io.jadiefication.commands.CommandLogic;
 import io.jadiefication.permission.PermissionablePlayer;
-import io.jadiefication.util.game.prestart.collision.CollisionHandler;
-import io.jadiefication.util.game.prestart.collision.CollisionItem;
+import io.jadiefication.game.prestart.collision.CollisionItem;
 import net.kyori.adventure.text.Component;
 import net.minestom.server.command.builder.Command;
-import net.minestom.server.command.builder.arguments.Argument;
 import net.minestom.server.command.builder.arguments.ArgumentEnum;
 import net.minestom.server.command.builder.arguments.ArgumentType;
-import org.jetbrains.annotations.NotNull;
 
 public class CollisionCommand extends Command implements CommandLogic {
 

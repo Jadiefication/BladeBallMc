@@ -1,7 +1,7 @@
 package io.jadiefication.commands;
 
 import io.jadiefication.Nimoh;
-import io.jadiefication.util.game.start.ball.BallHandler;
+import io.jadiefication.game.start.ball.BallHandler;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;
 import net.minestom.server.command.builder.Command;

@@ -1,6 +1,5 @@
-package io.jadiefication.util.game.prestart.collision;
+package io.jadiefication.game.prestart.collision;
 
-import io.jadiefication.customitem.CustomItem;
 import io.jadiefication.customitem.CustomItemHolder;
 import io.jadiefication.permission.PermissionablePlayer;
 import io.jadiefication.permission.Permissions;

@@ -1,13 +1,13 @@
-package io.jadiefication.util.game.start.ball;
+package io.jadiefication.game.start.ball;
 
 import io.jadiefication.Nimoh;
 import io.jadiefication.Server;
-import io.jadiefication.util.game.start.ball.entity.BallEntity;
-import io.jadiefication.util.game.start.Match;
-import io.jadiefication.util.game.start.team.GameTeam;
-import io.jadiefication.util.game.start.team.TeamHandler;
-import io.jadiefication.util.game.prestart.vote.VoteGamemode;
-import io.jadiefication.util.game.prestart.vote.VoteHandler;
+import io.jadiefication.game.start.ball.entity.BallEntity;
+import io.jadiefication.game.start.Match;
+import io.jadiefication.game.start.team.GameTeam;
+import io.jadiefication.game.start.team.TeamHandler;
+import io.jadiefication.game.prestart.vote.VoteGamemode;
+import io.jadiefication.game.prestart.vote.VoteHandler;
 import io.jadiefication.particlegenerator.ParticleGenerator;
 import io.jadiefication.particlegenerator.packets.PacketReceiver;
 import io.jadiefication.permission.PermissionablePlayer;
