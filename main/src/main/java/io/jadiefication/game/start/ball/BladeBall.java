@@ -67,8 +67,6 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
     public static final ItemStack item = ItemStack.builder(Material.DIAMOND_SWORD)
             .set(ItemComponent.USE_COOLDOWN, new UseCooldown(5, "sword"))
             .build();
-    private static final List<Player> targetList = new ArrayList<>();
-    private static List<Player> otherList = new ArrayList<>();
     private static final Notification winnerNotification = new Notification(Component.text("You gained 20 Coins", NamedTextColor.GOLD), FrameType.CHALLENGE, Server.coin);
     public static final Map<Player, Integer> shieldCooldown = new HashMap<>();
     private static Match mainMatch;
@@ -125,8 +123,6 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         synchronized (teamLock) {
             target.addMember(homedUsername);
             other.addMembers(playerNames);
-            targetList.addFirst(homedUponPlayer);
-            otherList = players;
         }
 
         synchronized (ballPositionLock) {
@@ -184,9 +180,6 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
             } else if (player == homedUponPlayer) target.removeMember(player.getUsername());
         });
         mainMatch.time = 0;
-
-        otherList.clear();
-        targetList.clear();
 
         BallState.stayingStill = true;
         BallState.ballPosition = new Pos(0.5, 50.0, 0.5);
