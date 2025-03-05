@@ -75,6 +75,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
     @Override
     public void update(InstanceContainer container) {
+        mainMatch.time += 1;
 
         if (Vote.gamemode != null && Vote.gamemode.equals(VoteGamemode.TEAM)) {
             if (TeamHandler.getInstance().isEmpty().isPresent()) {
@@ -182,6 +183,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
                 other.removeMember(player.getUsername());
             } else if (player == homedUponPlayer) target.removeMember(player.getUsername());
         });
+        mainMatch.time = 0;
 
         otherList.clear();
         targetList.clear();

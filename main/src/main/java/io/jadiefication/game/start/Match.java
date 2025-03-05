@@ -13,6 +13,7 @@ import java.util.Optional;
 public class Match {
 
     private final List<PermissionablePlayer> players = new ArrayList<>();
+    public int time = 0;
 
     public Match(Collection<Player> players) {
         this.players.addAll(players.stream().map(player -> ((PermissionablePlayer) player)).toList());
@@ -31,5 +32,9 @@ public class Match {
 
     public Optional<Player> isLast() {
         return this.players.size() == 1 ? Optional.of(this.players.getFirst()) : Optional.empty();
+    }
+
+    public int getTimeInSeconds() {
+        return time / 20;
     }
 }
