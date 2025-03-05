@@ -49,7 +49,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
     private static final double MAX_SPEED = 10.0;
     public static BallEntity entity;
     private static volatile Player homedUponPlayer;
-    public boolean hasPlayer = false;
+    public static boolean hasPlayer = false;
     private int hitWall;
     private static final Object ballPositionLock = new Object();
     private static final Object homedPlayerLock = new Object();
@@ -240,7 +240,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
         }
 
         entity.remove(); // Remove ball entity
-        start(container); // Restart game state
+        BallHandler.restart(container); // Restart game state
     }
 
     private void handleHomingLogic(InstanceContainer container) {

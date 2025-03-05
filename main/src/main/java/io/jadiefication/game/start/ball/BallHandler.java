@@ -1,6 +1,9 @@
 package io.jadiefication.game.start.ball;
 
 import io.jadiefication.Nimoh;
+import io.jadiefication.game.start.Match;
+import io.jadiefication.game.start.ball.entity.BallEntity;
+import io.jadiefication.game.start.team.TeamHandler;
 import io.jadiefication.util.Handler;
 import io.jadiefication.game.start.team.GameTeam;
 import io.jadiefication.game.prestart.vote.VoteGamemode;
@@ -19,6 +22,7 @@ import net.minestom.server.timer.Scheduler;
 import net.minestom.server.timer.Task;
 import net.minestom.server.timer.TaskSchedule;
 
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -30,22 +34,21 @@ import java.util.Set;
 public sealed interface BallHandler extends Handler permits BladeBall {
 
     static void restart(InstanceContainer container) {
+        BallState.stayingStill = true;
+        BallState.ballPosition = new Pos(0.5, 50.0, 0.5);
+        BladeBall.hasPlayer = false;
+        if (BallState.task != null) {
+            BallState.task.cancel();
+        }
 
-        BallState.task.cancel();
-        BallState.isActive = false;
+        BallState.task = ParticleGenerator.spawnSphereParticles(BallState.ballPosition, 0.5, 0.5, 0.5, new PacketReceiver(container, Particle.WAX_OFF), Double.POSITIVE_INFINITY);
 
-        Scheduler scheduler = MinecraftServer.getSchedulerManager();
+        if (BladeBall.entity != null) {
+            BladeBall.entity.remove(); // Remove the old ball entity
+        }
 
-        scheduler.scheduleTask(() -> {
-            if (!BallState.stayingStill) {
-                // Stop spawning particles when no longer staying still
-                return TaskSchedule.stop();
-            }
-            BallState.task = ParticleGenerator.spawnSphereParticles(BallState.ballPosition, 0.5, 0.5, 0.5, new PacketReceiver(container, Particle.WAX_OFF), 1);
-            return TaskSchedule.tick(1);
-        }, TaskSchedule.tick(1));
+        BladeBall.entity = new BallEntity(BallState.ballPosition, container); // Create the new ball entity
 
-        BallState.findFirstTarget(container);
         BallState.isActive = true;
         BallState.firstTarget = true;
     }
