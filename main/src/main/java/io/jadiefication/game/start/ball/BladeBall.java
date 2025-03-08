@@ -48,6 +48,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
 
     private static final double MAX_SPEED = 10.0;
     public static BallEntity entity;
+    public static boolean isBlocking = false;
     private static volatile Player homedUponPlayer;
     public static boolean hasPlayer = false;
     private int hitWall;
@@ -271,7 +272,7 @@ public non-sealed class BladeBall implements BallHandler, VoteHandler, TeamHandl
             }
 
             // Check if close enough to the target (collision)
-            if (BallState.ballPosition.distanceSquared(homedUponPlayer.getPosition()) < 0.25) {
+            if (BallState.ballPosition.distanceSquared(homedUponPlayer.getPosition()) < 0.25 && !isBlocking) {
                 handleCollision(container, homedUponPlayer);
             }
         } else hasPlayer = false;

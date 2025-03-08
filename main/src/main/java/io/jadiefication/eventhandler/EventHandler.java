@@ -261,7 +261,8 @@ public abstract class EventHandler implements PlayerDataHandler {
                 return;
             }
 
-            if (BladeBall.isHomedUponPlayer(player) && BallHandler.BallState.ballPosition.distanceSquared(player.getPosition()) < 0.25) {
+            if (BladeBall.isHomedUponPlayer(player) && BallHandler.BallState.ballPosition.distanceSquared(player.getPosition()) < 0.5) {
+                BladeBall.isBlocking = true;
                 Nimoh.game.setPlayerAttached(false);
                 BallHandler.BallState.firstTarget = false;
                 BallHandler.BallState.playerWhomHitTheBall = player;
